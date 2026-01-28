@@ -245,7 +245,7 @@ router.get('/messages/:userId', requireApprovedTeacher, async (req: AuthedReques
 // POST /api/teacher/message
 router.post('/message', requireApprovedTeacher, async (req: AuthedRequest, res) => {
   const { recipientId, content } = req.body
-  const teacher = (req as any).teacherDoc
+  // const teacher = (req as any).teacherDoc
   const Message = (await import('../models/Message')).default
 
   // Get recipient name for redundancy/display

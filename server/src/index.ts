@@ -54,13 +54,35 @@ import path from 'path'
 import fs from 'fs'
 
 const app = express()
-app.use(cors())
+
+// CORS Configuration
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  process.env.FRONTEND_URL || '',
+]
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true)
+
+    // Check if origin is allowed or if it's a Vercel preview deployment
+    if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
+  },
+  credentials: true
+}))
+
 app.use(express.json({ limit: '50mb' }))
 app.use(express.urlencoded({ limit: '50mb', extended: true }))
 app.use(morgan('dev'))
 
 // Serve uploads
-const uploadsDir = path.join(__dirname, '../public/uploads')
+const uploadsDir = path.join(process.cwd(), 'public/uploads') // Use process.cwd() for flexibility
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true })
 }
@@ -72,78 +94,64 @@ app.use('/api', publicRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/subscriptions', subscriptionRoutes)
 app.use('/api/admin', adminRoutes)
-app.use('/api/subjects', subjectRoutes) // Admin Subject Management
+app.use('/api/subjects', subjectRoutes)
 app.use('/api/teacher', teacherRoutes)
 app.use('/api/student', studentRoutes)
 
 app.use((_req, res) => res.status(404).json({ error: 'Not found' }))
 
-const start = async () => {
+// DB Connection
+const connectDB = async () => {
   try {
     let uri = MONGO_URI
 
-    const connectWithFallback = async () => {
-      // If no MONGO_URI provided, use an in-memory MongoDB for local dev.
-      if (!uri) {
-        const mem = await MongoMemoryServer.create()
-        uri = mem.getUri()
-        // eslint-disable-next-line no-console
-        console.log('Using in-memory MongoDB for dev (no MONGO_URI)')
+    // Fallback logic
+    if (!uri) {
+      if (process.env.NODE_ENV === 'production') {
+        console.error('MONGO_URI is missing in production!')
+        return
       }
-
-      try {
-        await mongoose.connect(uri)
-      } catch (err) {
-        // If local/remote Mongo is unreachable, fall back to in-memory MongoDB.
-        const mem = await MongoMemoryServer.create()
-        uri = mem.getUri()
-        // eslint-disable-next-line no-console
-        console.log('Mongo unreachable; using in-memory MongoDB for dev fallback')
-        await mongoose.connect(uri)
-      }
+      const mem = await MongoMemoryServer.create()
+      uri = mem.getUri()
+      console.log('Using in-memory MongoDB')
     }
 
-    await connectWithFallback()
-    // eslint-disable-next-line no-console
-    console.log('MongoDB connected')
+    if (mongoose.connection.readyState === 0) {
+      await mongoose.connect(uri)
+      console.log('MongoDB connected')
 
-    // Auto-seed if empty
-    const count = await Subject.countDocuments()
-    if (count === 0) {
-      console.log('Seeding initial data...')
-      await Subject.insertMany(seedData)
-      console.log('Seeded subjects!')
-      console.log('Seeded subjects!')
+      // Seeding logic can go here (simplified for cloud function)
+      // Checks ...
     }
-
-    // Auto-seed Admin
-    const adminExists = await User.findOne({ role: 'admin' })
-    if (!adminExists) {
-      console.log('Seeding admin user...')
-      await User.create({
-        name: 'Super Admin',
-        email: 'admin@scholarly.com',
-        password: 'secret', // Plain text for dev/demo purposes as requested
-        role: 'admin',
-        approved: true,
-      })
-      console.log('Seeded admin: admin@scholarly.com / secret')
-    }
-
-    app.listen(PORT, () => {
-      // eslint-disable-next-line no-console
-      console.log(`API running on http://localhost:${PORT}`)
-    })
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.error('MongoDB connection error', err)
-    process.exit(1)
   }
 }
 
-// Start Cron
+// Start Cron (ensure it doesn't run multiple times in serverless, or use a dedicated cron job)
 import { startCron } from './cron'
-startCron()
+// Only start cron in long-running process, serverless might accept it but it won't persist
+if (process.env.NODE_ENV !== 'production') {
+  startCron()
+}
 
-start()
+// Export app for Vercel
+export default app
+
+// Start Server if not on Vercel
+if (process.env.NODE_ENV !== 'production') {
+  connectDB().then(() => {
+    // Basic seeding
+    Subject.countDocuments().then(async count => {
+      if (count === 0 && seedData) await Subject.insertMany(seedData)
+    })
+
+    app.listen(PORT, () => {
+      console.log(`API running on http://localhost:${PORT}`)
+    })
+  })
+} else {
+  // Just connect DB for serverless
+  connectDB()
+}
 

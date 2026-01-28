@@ -15,6 +15,7 @@ const quizSchema = new Schema(
     subjectId: { type: Schema.Types.ObjectId, ref: 'Subject', required: true },
     questions: { type: [questionSchema], default: [] },
     isPremium: { type: Boolean, default: true },
+    teacherId: { type: Schema.Types.ObjectId, ref: 'User' }, // Optional for AI generated or explicit assignment
   },
   { timestamps: true },
 )

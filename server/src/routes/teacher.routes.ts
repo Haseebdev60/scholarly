@@ -131,7 +131,6 @@ router.post('/create-resource', requireApprovedTeacher, async (req: AuthedReques
     url: finalUrl,
     subjectId,
     teacherId: req.user!.id,
-    teacherName: teacher.name,
     year,
     size,
     format,

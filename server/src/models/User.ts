@@ -36,11 +36,15 @@ const userSchema = new Schema(
   { timestamps: true },
 )
 
-userSchema.pre('save', async function passwordHash(next) {
+userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next()
-  const salt = await bcrypt.genSalt(10)
-    ; (this as any).password = await bcrypt.hash((this as any).password, salt)
-  next()
+  try {
+    const salt = await bcrypt.genSalt(10)
+      ; (this as any).password = await bcrypt.hash((this as any).password, salt)
+    next()
+  } catch (err: any) {
+    next(err)
+  }
 })
 
 userSchema.methods.comparePassword = async function comparePassword(candidate: string) {

@@ -1,8 +1,7 @@
 
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { teacherApi, publicApi } from '../../lib/api'
-import { useAuth } from '../../contexts/AuthContext'
+import { teacherApi } from '../../lib/api'
 import Button from '../../components/Button'
 import Card from '../../components/Card'
 import Modal from '../../components/Modal'
@@ -38,7 +37,6 @@ type SubjectItem = {
 }
 
 const TeacherOverview = () => {
-    const { user } = useAuth()
     const [classes, setClasses] = useState<ClassItem[]>([])
     const [resources, setResources] = useState<ResourceItem[]>([])
     const [subjects, setSubjects] = useState<SubjectItem[]>([])

@@ -82,11 +82,24 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }))
 app.use(morgan('dev'))
 
 // Serve uploads
-const uploadsDir = path.join(process.cwd(), 'public/uploads') // Use process.cwd() for flexibility
+// Serve uploads
+const uploadsDir = process.env.NODE_ENV === 'production'
+  ? path.join('/tmp', 'uploads')
+  : path.join(process.cwd(), 'public/uploads')
+
 if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true })
+  try {
+    fs.mkdirSync(uploadsDir, { recursive: true })
+  } catch (err) {
+    console.error('Failed to create uploads directory:', err)
+  }
 }
-app.use('/uploads', express.static(uploadsDir))
+// Serve static files if not in tmp (Vercel doesn't persist /tmp between requests mostly, but prevents crash)
+// In production Vercel, this won't actually serve files uploaded previously, needing S3/Cloudinary.
+// But this prevents the crash on startup.
+if (process.env.NODE_ENV !== 'production') {
+  app.use('/uploads', express.static(uploadsDir))
+}
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }))
 

@@ -1,4 +1,5 @@
 import 'dotenv/config'
+import 'express-async-errors' // Handle async errors
 import express from 'express'
 import cors from 'cors'
 import morgan from 'morgan'
@@ -122,6 +123,7 @@ const connectDB = async () => {
     if (!uri) {
       if (process.env.NODE_ENV === 'production') {
         console.error('MONGO_URI is missing in production!')
+        // Don't exit, just let it fail at query time so we can return nice JSON error
         return
       }
       const mem = await MongoMemoryServer.create()
@@ -132,9 +134,6 @@ const connectDB = async () => {
     if (mongoose.connection.readyState === 0) {
       await mongoose.connect(uri)
       console.log('MongoDB connected')
-
-      // Seeding logic can go here (simplified for cloud function)
-      // Checks ...
     }
   } catch (err) {
     console.error('MongoDB connection error', err)
@@ -147,6 +146,15 @@ import { startCron } from './cron'
 if (process.env.NODE_ENV !== 'production') {
   startCron()
 }
+
+// Global Error Handler
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error('Global Error:', err)
+  res.status(500).json({
+    error: err.message || 'Internal Server Error',
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  })
+})
 
 // Export app for Vercel
 export default app

@@ -17,7 +17,7 @@ import subjectRoutes from './routes/subject.routes'
 
 import publicRoutes from './routes/public.routes'
 import Subject from './models/Subject'
-import User from './models/User'
+
 
 // Seed Data
 const seedData = [

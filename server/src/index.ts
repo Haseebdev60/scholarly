@@ -156,6 +156,20 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
   })
 })
 
+// Middleware to ensure DB connection
+app.use(async (req, res, next) => {
+  if (mongoose.connection.readyState === 0 || mongoose.connection.readyState === 99) {
+    try {
+      await connectDB()
+    } catch (err) {
+      console.error('DB Connect Middleware Error:', err)
+      // Let the global handler take it
+      throw err
+    }
+  }
+  next()
+})
+
 // Export app for Vercel
 export default app
 
@@ -171,8 +185,5 @@ if (process.env.NODE_ENV !== 'production') {
       console.log(`API running on http://localhost:${PORT}`)
     })
   })
-} else {
-  // Just connect DB for serverless
-  connectDB()
 }
 

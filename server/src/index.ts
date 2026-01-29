@@ -125,21 +125,23 @@ const connectDB = async () => {
         // Don't exit, just let it fail at query time so we can return nice JSON error
         return
       }
+      // Dynamic import to prevent crash in production where devDeps are pruned
+      const { MongoMemoryServer } = await import('mongodb-memory-server')
+      const mem = await MongoMemoryServer.create()
+      uri = mem.getUri()
+      console.log('Using in-memory MongoDB')
     }
-    // Dynamic import to prevent crash in production where devDeps are pruned
-    const { MongoMemoryServer } = await import('mongodb-memory-server')
-    const mem = await MongoMemoryServer.create()
-    uri = mem.getUri()
-    console.log('Using in-memory MongoDB')
-  }
 
     if (mongoose.connection.readyState === 0) {
-    await mongoose.connect(uri, { serverSelectionTimeoutMS: 5000 })
-    console.log('MongoDB connected')
+      // Ensure uri is defined, which it is by logic above or initial assignment
+      if (uri) {
+        await mongoose.connect(uri, { serverSelectionTimeoutMS: 5000 })
+        console.log('MongoDB connected')
+      }
+    }
+  } catch (err) {
+    console.error('MongoDB connection error', err)
   }
-} catch (err) {
-  console.error('MongoDB connection error', err)
-}
 }
 
 // Start Cron (ensure it doesn't run multiple times in serverless, or use a dedicated cron job)

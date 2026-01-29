@@ -101,7 +101,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 app.get('/', (_req, res) => res.json({ message: 'Backend is running' }))
-app.get('/api/health', (_req, res) => res.json({ ok: true }))
+app.get('/api/health', (_req, res) => res.json({ ok: true, timestamp: new Date().toISOString() }))
 
 app.use('/api', publicRoutes)
 app.use('/api/auth', authRoutes)

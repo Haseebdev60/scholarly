@@ -65,13 +65,12 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true)
-
-    // Check if origin is allowed or if it's a Vercel preview deployment
-    if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+    const allowed = [process.env.FRONTEND_URL, 'http://localhost:5173', 'http://localhost:3000']
+    // Allow server-to-server or mobile (no origin) if needed, otherwise strict
+    if (!origin || allowed.includes(origin) || (origin && origin.endsWith('.vercel.app'))) {
       callback(null, true)
     } else {
+      console.error(`CORS Blocked: ${origin}`)
       callback(new Error('Not allowed by CORS'))
     }
   },
@@ -102,6 +101,7 @@ if (process.env.NODE_ENV !== 'production') {
   app.use('/uploads', express.static(uploadsDir))
 }
 
+app.get('/', (_req, res) => res.json({ message: 'Backend is running' }))
 app.get('/api/health', (_req, res) => res.json({ ok: true }))
 
 app.use('/api', publicRoutes)

@@ -37,7 +37,14 @@ async function request<T>(
     headers,
   })
 
-  const json: ApiEnvelope<T> = await response.json()
+  const text = await response.text()
+  let json: ApiEnvelope<T>
+  try {
+    json = JSON.parse(text)
+  } catch (e) {
+    console.error('Failed to parse API response:', text)
+    throw new ApiError(response.status, 'Invalid JSON response from server')
+  }
 
   if (!response.ok) {
     throw new ApiError(

@@ -15,7 +15,7 @@
     "jsx": "react-jsx",
     "skipLibCheck": true,
     /* Bundler mode (Relaxed for Serverless) */
-    "moduleResolution": "NodeNext",
+    "moduleResolution": "node",
     "allowImportingTsExtensions": false,
     "resolveJsonModule": true,
     "moduleDetection": "force",

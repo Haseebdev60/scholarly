@@ -106,7 +106,7 @@ app.use(async (_req, _res, next) => {
 })
 
 // Routes
-app.use('/api', publicRoutes)
+// app.use('/api', publicRoutes)
 app.use('/api/auth', authRoutes)
 // app.use('/api/subscriptions', subscriptionRoutes)
 // app.use('/api/admin', adminRoutes)

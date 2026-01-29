@@ -9,20 +9,16 @@ import morgan from 'morgan'
 import mongoose from 'mongoose'
 console.log('[DEBUG] mongoose imported')
 
-import authRoutes from './routes/auth.routes'
-import subscriptionRoutes from './routes/subscription.routes'
-import adminRoutes from './routes/admin.routes'
-import teacherRoutes from './routes/teacher.routes'
-import studentRoutes from './routes/student.routes'
-import subjectRoutes from './routes/subject.routes'
-
-// ...
+// import authRoutes from './routes/auth.routes'
+// import subscriptionRoutes from './routes/subscription.routes'
+// import adminRoutes from './routes/admin.routes'
+// import teacherRoutes from './routes/teacher.routes'
+// import studentRoutes from './routes/student.routes'
+// import subjectRoutes from './routes/subject.routes'
 
 import publicRoutes from './routes/public.routes'
 import Subject from './models/Subject'
 
-
-// Seed Data
 const seedData = [
   {
     title: 'Advanced Mathematics',
@@ -69,7 +65,6 @@ const allowedOrigins = [
 app.use(cors({
   origin: (origin, callback) => {
     const allowed = [process.env.FRONTEND_URL, 'http://localhost:5173', 'http://localhost:3000']
-    // Allow server-to-server or mobile (no origin) if needed, otherwise strict
     if (!origin || allowed.includes(origin) || (origin && origin.endsWith('.vercel.app'))) {
       callback(null, true)
     } else {
@@ -84,12 +79,10 @@ app.use(express.json({ limit: '50mb' }))
 app.use(express.urlencoded({ limit: '50mb', extended: true }))
 app.use(morgan('dev'))
 
-// DB Connection Logic (Moved to Top)
+// DB Connection Logic
 const connectDB = async () => {
   try {
     let uri = MONGO_URI
-
-    // Fallback logic
     if (!uri) {
       if (process.env.NODE_ENV === 'production') {
         console.error('MONGO_URI is missing in production!')
@@ -116,7 +109,7 @@ const connectDB = async () => {
 app.get('/', (_req, res) => res.json({ message: 'Backend is running' }))
 app.get('/api/health', (_req, res) => res.json({ ok: true, timestamp: new Date().toISOString() }))
 
-// Middleware to ensure DB connection (Must be before routes)
+// Middleware to ensure DB connection
 app.use(async (_req, _res, next) => {
   if (mongoose.connection.readyState === 0 || mongoose.connection.readyState === 99) {
     try {
@@ -129,8 +122,6 @@ app.use(async (_req, _res, next) => {
   next()
 })
 
-// Serve uploads
-// Serve uploads
 const uploadsDir = process.env.NODE_ENV === 'production'
   ? path.join('/tmp', 'uploads')
   : path.join(process.cwd(), 'public/uploads')
@@ -142,34 +133,25 @@ if (!fs.existsSync(uploadsDir)) {
     console.error('Failed to create uploads directory:', err)
   }
 }
-// Serve static files if not in tmp (Vercel doesn't persist /tmp between requests mostly, but prevents crash)
-// In production Vercel, this won't actually serve files uploaded previously, needing S3/Cloudinary.
-// But this prevents the crash on startup.
 if (process.env.NODE_ENV !== 'production') {
   app.use('/uploads', express.static(uploadsDir))
 }
 
-
-
-app.use('/api', publicRoutes)
-app.use('/api/auth', authRoutes)
-app.use('/api/subscriptions', subscriptionRoutes)
-app.use('/api/admin', adminRoutes)
-app.use('/api/subjects', subjectRoutes)
-app.use('/api/teacher', teacherRoutes)
-app.use('/api/student', studentRoutes)
+// COMMENTED OUT ROUTES FOR DEBUGGING
+// app.use('/api', publicRoutes)
+// app.use('/api/auth', authRoutes)
+// app.use('/api/subscriptions', subscriptionRoutes)
+// app.use('/api/admin', adminRoutes)
+// app.use('/api/subjects', subjectRoutes)
+// app.use('/api/teacher', teacherRoutes)
+// app.use('/api/student', studentRoutes)
 
 app.use((_req, res) => res.status(404).json({ error: 'Not found' }))
 
-// DB Connection
-
-
-// Start Cron (ensure it doesn't run multiple times in serverless, or use a dedicated cron job)
-import { startCron } from './cron'
-// Only start cron in long-running process, serverless might accept it but it won't persist
-if (process.env.NODE_ENV !== 'production') {
-  startCron()
-}
+// import { startCron } from './cron'
+// if (process.env.NODE_ENV !== 'production') {
+//   startCron()
+// }
 
 // Global Error Handler
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
@@ -180,22 +162,15 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
   })
 })
 
-
-
-// Export app for Vercel
 export default app
 
-// Start Server if not on Vercel
 if (process.env.NODE_ENV !== 'production') {
   connectDB().then(() => {
-    // Basic seeding
     Subject.countDocuments().then(async count => {
       if (count === 0 && seedData) await Subject.insertMany(seedData)
     })
-
     app.listen(PORT, () => {
       console.log(`API running on http://localhost:${PORT}`)
     })
   })
 }
-

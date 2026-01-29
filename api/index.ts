@@ -8,16 +8,16 @@ import path from 'path'
 import fs from 'fs'
 
 // Import Routes (Adjusted Paths)
-import authRoutes from '../server/src/routes/auth.routes'
-import subscriptionRoutes from '../server/src/routes/subscription.routes'
-import adminRoutes from '../server/src/routes/admin.routes'
-import teacherRoutes from '../server/src/routes/teacher.routes'
-import studentRoutes from '../server/src/routes/student.routes'
-import subjectRoutes from '../server/src/routes/subject.routes'
-import publicRoutes from '../server/src/routes/public.routes'
+// import authRoutes from '../server/src/routes/auth.routes'
+// import subscriptionRoutes from '../server/src/routes/subscription.routes'
+// import adminRoutes from '../server/src/routes/admin.routes'
+// import teacherRoutes from '../server/src/routes/teacher.routes'
+// import studentRoutes from '../server/src/routes/student.routes'
+// import subjectRoutes from '../server/src/routes/subject.routes'
+// import publicRoutes from '../server/src/routes/public.routes'
 
 // Import Models
-import Subject from '../server/src/models/Subject'
+// import Subject from '../server/src/models/Subject'
 
 // Seed Data
 const seedData = [
@@ -106,13 +106,13 @@ app.use(async (_req, _res, next) => {
 })
 
 // Routes
-app.use('/api', publicRoutes)
-app.use('/api/auth', authRoutes)
-app.use('/api/subscriptions', subscriptionRoutes)
-app.use('/api/admin', adminRoutes)
-app.use('/api/subjects', subjectRoutes)
-app.use('/api/teacher', teacherRoutes)
-app.use('/api/student', studentRoutes)
+// app.use('/api', publicRoutes)
+// app.use('/api/auth', authRoutes)
+// app.use('/api/subscriptions', subscriptionRoutes)
+// app.use('/api/admin', adminRoutes)
+// app.use('/api/subjects', subjectRoutes)
+// app.use('/api/teacher', teacherRoutes)
+// app.use('/api/student', studentRoutes)
 
 app.use((_req, res) => res.status(404).json({ error: 'Not found' }))
 

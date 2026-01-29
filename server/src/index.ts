@@ -4,7 +4,6 @@ import express from 'express'
 import cors from 'cors'
 import morgan from 'morgan'
 import mongoose from 'mongoose'
-import { MongoMemoryServer } from 'mongodb-memory-server'
 
 import authRoutes from './routes/auth.routes'
 import subscriptionRoutes from './routes/subscription.routes'
@@ -126,18 +125,21 @@ const connectDB = async () => {
         // Don't exit, just let it fail at query time so we can return nice JSON error
         return
       }
-      const mem = await MongoMemoryServer.create()
-      uri = mem.getUri()
-      console.log('Using in-memory MongoDB')
     }
+    // Dynamic import to prevent crash in production where devDeps are pruned
+    const { MongoMemoryServer } = await import('mongodb-memory-server')
+    const mem = await MongoMemoryServer.create()
+    uri = mem.getUri()
+    console.log('Using in-memory MongoDB')
+  }
 
     if (mongoose.connection.readyState === 0) {
-      await mongoose.connect(uri, { serverSelectionTimeoutMS: 5000 })
-      console.log('MongoDB connected')
-    }
-  } catch (err) {
-    console.error('MongoDB connection error', err)
+    await mongoose.connect(uri, { serverSelectionTimeoutMS: 5000 })
+    console.log('MongoDB connected')
   }
+} catch (err) {
+  console.error('MongoDB connection error', err)
+}
 }
 
 // Start Cron (ensure it doesn't run multiple times in serverless, or use a dedicated cron job)

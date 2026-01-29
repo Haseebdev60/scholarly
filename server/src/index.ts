@@ -157,7 +157,7 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
 })
 
 // Middleware to ensure DB connection
-app.use(async (req, res, next) => {
+app.use(async (_req, _res, next) => {
   if (mongoose.connection.readyState === 0 || mongoose.connection.readyState === 99) {
     try {
       await connectDB()

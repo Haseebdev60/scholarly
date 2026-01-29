@@ -8,7 +8,7 @@ import path from 'path'
 import fs from 'fs'
 
 // Import Routes (Adjusted Paths)
-// import authRoutes from '../server/src/routes/auth.routes'
+import authRoutes from '../server/src/routes/auth.routes'
 // import subscriptionRoutes from '../server/src/routes/subscription.routes'
 // import adminRoutes from '../server/src/routes/admin.routes'
 // import teacherRoutes from '../server/src/routes/teacher.routes'

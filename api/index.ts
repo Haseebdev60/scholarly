@@ -18,8 +18,9 @@ import publicRoutes from '../server/src/routes/public.routes'
 
 // Import Models
 import Subject from '../server/src/models/Subject'
-import UserModel from '../server/src/models/UserModel'
-console.log('DEBUG: UserModel imported', UserModel ? 'OK' : 'FAIL')
+// import UserModel from '../server/src/models/UserModel'
+import Debug from '../server/src/models/Debug'
+console.log('DEBUG: Debug model imported', Debug ? 'OK' : 'FAIL')
 
 // Seed Data
 const seedData = [
@@ -109,7 +110,7 @@ app.use(async (_req, _res, next) => {
 
 // Routes
 // app.use('/api', publicRoutes)
-// app.use('/api/auth', authRoutes)
+// // app.use('/api/auth', authRoutes)
 // app.use('/api/subscriptions', subscriptionRoutes)
 // app.use('/api/admin', adminRoutes)
 // app.use('/api/subjects', subjectRoutes)

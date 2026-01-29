@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import 'express-async-errors' // Handle async errors
+
 import express from 'express'
 import cors from 'cors'
 import morgan from 'morgan'

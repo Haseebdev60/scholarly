@@ -19,8 +19,10 @@
     "allowImportingTsExtensions": false,
     "resolveJsonModule": true,
     "moduleDetection": "force",
+    "moduleDetection": "force",
     "noEmit": false,
     "esModuleInterop": true,
+    "outDir": "./dist",
     /* Linting */
     "strict": true,
     "noUnusedLocals": false,

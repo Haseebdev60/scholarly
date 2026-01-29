@@ -1,9 +1,13 @@
+console.log('[DEBUG] Starting server/src/index.ts')
 import 'dotenv/config'
+console.log('[DEBUG] dotenv loaded')
 
 import express from 'express'
+console.log('[DEBUG] express imported')
 import cors from 'cors'
 import morgan from 'morgan'
 import mongoose from 'mongoose'
+console.log('[DEBUG] mongoose imported')
 
 import authRoutes from './routes/auth.routes'
 import subscriptionRoutes from './routes/subscription.routes'

@@ -18,8 +18,8 @@ import publicRoutes from '../server/src/routes/public.routes'
 
 // Import Models
 import Subject from '../server/src/models/Subject'
-// import User from '../server/src/models/User'
-// console.log('DEBUG: User model imported', User ? 'OK' : 'FAIL')
+import UserModel from '../server/src/models/UserModel'
+console.log('DEBUG: UserModel imported', UserModel ? 'OK' : 'FAIL')
 
 // Seed Data
 const seedData = [

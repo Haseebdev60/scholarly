@@ -108,6 +108,10 @@ const connectDB = async () => {
   }
 }
 
+// Health Checks (No DB)
+app.get('/', (_req, res) => res.json({ message: 'Backend is running' }))
+app.get('/api/health', (_req, res) => res.json({ ok: true, timestamp: new Date().toISOString() }))
+
 // Middleware to ensure DB connection (Must be before routes)
 app.use(async (_req, _res, next) => {
   if (mongoose.connection.readyState === 0 || mongoose.connection.readyState === 99) {
@@ -141,8 +145,7 @@ if (process.env.NODE_ENV !== 'production') {
   app.use('/uploads', express.static(uploadsDir))
 }
 
-app.get('/', (_req, res) => res.json({ message: 'Backend is running' }))
-app.get('/api/health', (_req, res) => res.json({ ok: true, timestamp: new Date().toISOString() }))
+
 
 app.use('/api', publicRoutes)
 app.use('/api/auth', authRoutes)

@@ -96,6 +96,33 @@ const connectDB = async () => {
 app.get('/', (_req, res) => res.json({ message: 'Backend is running (Full App in API)' }))
 app.get('/api/health', (_req, res) => res.json({ ok: true, mode: 'Full API', timestamp: new Date().toISOString() }))
 
+// Diagnostic Route to inspect file system
+app.get('/api/debug-files', (_req, res) => {
+    try {
+        const possiblePaths = [
+            path.join(process.cwd(), 'server', 'src', 'models'),
+            path.join(__dirname, '..', 'server', 'src', 'models'),
+            path.join(process.cwd(), 'api'),
+            process.cwd()
+        ]
+        const results: any = {}
+        possiblePaths.forEach(p => {
+            try {
+                if (fs.existsSync(p)) {
+                    results[p] = fs.readdirSync(p)
+                } else {
+                    results[p] = 'NOT FOUND'
+                }
+            } catch (err: any) {
+                results[p] = `ERROR: ${err.message}`
+            }
+        })
+        res.json({ env: process.env.NODE_ENV, scan: results })
+    } catch (err: any) {
+        res.status(500).json({ error: err.message })
+    }
+})
+
 // Middleware to ensure DB connection
 app.use(async (_req, _res, next) => {
     if (mongoose.connection.readyState === 0 || mongoose.connection.readyState === 99) {

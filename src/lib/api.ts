@@ -26,6 +26,9 @@ async function request<T>(
   options: RequestInit = {},
 ): Promise<T> {
   const token = localStorage.getItem('token')
+  const fullUrl = `${API_BASE}${endpoint}`
+  console.log(`[API Request] ${options.method || 'GET'} ${fullUrl}`, { token: !!token })
+
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
     ...(token && { Authorization: `Bearer ${token}` }),

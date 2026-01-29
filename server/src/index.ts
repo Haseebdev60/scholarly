@@ -132,7 +132,7 @@ const connectDB = async () => {
     }
 
     if (mongoose.connection.readyState === 0) {
-      await mongoose.connect(uri)
+      await mongoose.connect(uri, { serverSelectionTimeoutMS: 5000 })
       console.log('MongoDB connected')
     }
   } catch (err) {

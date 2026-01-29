@@ -14,10 +14,10 @@ import authRoutes from '../server/src/routes/auth.routes'
 // import teacherRoutes from '../server/src/routes/teacher.routes'
 // import studentRoutes from '../server/src/routes/student.routes'
 // import subjectRoutes from '../server/src/routes/subject.routes'
-import publicRoutes from '../server/src/routes/public.routes'
+// import publicRoutes from '../server/src/routes/public.routes'
 
 // Import Models
-import Subject from '../server/src/models/Subject'
+// import Subject from '../server/src/models/Subject'
 
 // Seed Data
 const seedData = [

@@ -1,8 +1,8 @@
 import fs from 'fs'
 import path from 'path'
-import { VercelRequest, VercelResponse } from '@vercel/node'
+// import { VercelRequest, VercelResponse } from '@vercel/node'
 
-export default function (req: VercelRequest, res: VercelResponse) {
+export default function (req: any, res: any) {
     try {
         // Navigate up from 'api' folder to root, then into 'server/src/models'
         // Vercel structure is usually: /var/task/api/diagnose.js (entry)

@@ -80,6 +80,47 @@ app.use(express.json({ limit: '50mb' }))
 app.use(express.urlencoded({ limit: '50mb', extended: true }))
 app.use(morgan('dev'))
 
+// DB Connection Logic (Moved to Top)
+const connectDB = async () => {
+  try {
+    let uri = MONGO_URI
+
+    // Fallback logic
+    if (!uri) {
+      if (process.env.NODE_ENV === 'production') {
+        console.error('MONGO_URI is missing in production!')
+        return
+      }
+      const { MongoMemoryServer } = await import('mongodb-memory-server')
+      const mem = await MongoMemoryServer.create()
+      uri = mem.getUri()
+      console.log('Using in-memory MongoDB')
+    }
+
+    if (mongoose.connection.readyState === 0) {
+      if (uri) {
+        await mongoose.connect(uri, { serverSelectionTimeoutMS: 5000 })
+        console.log('MongoDB connected')
+      }
+    }
+  } catch (err) {
+    console.error('MongoDB connection error', err)
+  }
+}
+
+// Middleware to ensure DB connection (Must be before routes)
+app.use(async (_req, _res, next) => {
+  if (mongoose.connection.readyState === 0 || mongoose.connection.readyState === 99) {
+    try {
+      await connectDB()
+    } catch (err) {
+      console.error('DB Connect Middleware Error:', err)
+      throw err
+    }
+  }
+  next()
+})
+
 // Serve uploads
 // Serve uploads
 const uploadsDir = process.env.NODE_ENV === 'production'
@@ -114,35 +155,7 @@ app.use('/api/student', studentRoutes)
 app.use((_req, res) => res.status(404).json({ error: 'Not found' }))
 
 // DB Connection
-const connectDB = async () => {
-  try {
-    let uri = MONGO_URI
 
-    // Fallback logic
-    if (!uri) {
-      if (process.env.NODE_ENV === 'production') {
-        console.error('MONGO_URI is missing in production!')
-        // Don't exit, just let it fail at query time so we can return nice JSON error
-        return
-      }
-      // Dynamic import to prevent crash in production where devDeps are pruned
-      const { MongoMemoryServer } = await import('mongodb-memory-server')
-      const mem = await MongoMemoryServer.create()
-      uri = mem.getUri()
-      console.log('Using in-memory MongoDB')
-    }
-
-    if (mongoose.connection.readyState === 0) {
-      // Ensure uri is defined, which it is by logic above or initial assignment
-      if (uri) {
-        await mongoose.connect(uri, { serverSelectionTimeoutMS: 5000 })
-        console.log('MongoDB connected')
-      }
-    }
-  } catch (err) {
-    console.error('MongoDB connection error', err)
-  }
-}
 
 // Start Cron (ensure it doesn't run multiple times in serverless, or use a dedicated cron job)
 import { startCron } from './cron'
@@ -160,19 +173,7 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
   })
 })
 
-// Middleware to ensure DB connection
-app.use(async (_req, _res, next) => {
-  if (mongoose.connection.readyState === 0 || mongoose.connection.readyState === 99) {
-    try {
-      await connectDB()
-    } catch (err) {
-      console.error('DB Connect Middleware Error:', err)
-      // Let the global handler take it
-      throw err
-    }
-  }
-  next()
-})
+
 
 // Export app for Vercel
 export default app

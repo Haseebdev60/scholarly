@@ -25,3 +25,6 @@ yarn-error.log*
 .gemini/
 .agent/
 brain/
+
+# Generated Serverless Files
+api/index.js

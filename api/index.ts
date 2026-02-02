@@ -1,4 +1,4 @@
-console.log('[DEBUG] Starting api/index.ts (Full App)')
+console.log('[DEBUG] Starting api/index.ts (Auth Migration Phase)')
 import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
@@ -7,57 +7,11 @@ import mongoose from 'mongoose'
 import path from 'path'
 import fs from 'fs'
 
-// Import Routes (Adjusted Paths)
-import authRoutes from '../server/src/routes/auth.routes'
-// import subscriptionRoutes from '../server/src/routes/subscription.routes'
-// import adminRoutes from '../server/src/routes/admin.routes'
-// import teacherRoutes from '../server/src/routes/teacher.routes'
-// import studentRoutes from '../server/src/routes/student.routes'
-import subjectRoutes from '../server/src/routes/subject.routes'
-import publicRoutes from '../server/src/routes/public.routes'
+// Local Route Imports (ESM)
+import authRoutes from './routes/auth.routes.js'
 
-// Import Models
-// import Subject from '../server/src/models/Subject'
-// import User from '../server/src/models/User'
-// import Debug from '../server/src/models/Debug'
-// console.log('DEBUG: Subject model imported', Subject ? 'OK' : 'FAIL')
-
-// INLINE DEBUG MODEL
-// const InlineUserSchema = new mongoose.Schema({ name: String });
-// const InlineUser = mongoose.models.InlineUser || mongoose.model('InlineUser', InlineUserSchema);
-// console.log('DEBUG: InlineUser model created', InlineUser ? 'OK' : 'FAIL')
-
-import TestUser from './models/TestUser.js'
-console.log('DEBUG: TestUser (local + .js) model imported', TestUser ? 'OK' : 'FAIL')
-
-// Seed Data
-const seedData = [
-    {
-        title: 'Advanced Mathematics',
-        description: 'Master calculus, algebra, and trigonometry with expert guidance.',
-        isPremium: true,
-    },
-    {
-        title: 'Physics Fundamentals',
-        description: 'Explore mechanics, thermodynamics, and electromagnetism.',
-        isPremium: true,
-    },
-    {
-        title: 'Introductory Chemistry',
-        description: 'Build a strong foundation in chemical principles and reactions.',
-        isPremium: true,
-    },
-    {
-        title: 'English Literature',
-        description: 'Analyze classic texts and improve your critical reading skills.',
-        isPremium: true,
-    },
-    {
-        title: 'Computer Science 101',
-        description: 'Learn the basics of programming and algorithms.',
-        isPremium: true,
-    },
-]
+// import publicRoutes from '../server/src/routes/public.routes'
+// app.use('/api', publicRoutes)
 
 const MONGO_URI = process.env.MONGO_URI
 
@@ -71,7 +25,6 @@ app.use(cors({
             callback(null, true)
         } else {
             console.log(`[CORS WARN] Blocked: ${origin}`)
-            // callback(new Error('Not allowed by CORS')) // Don't crash, just log warning for now
             callback(null, false)
         }
     },
@@ -101,17 +54,18 @@ const connectDB = async () => {
 }
 
 // Health Checks
-app.get('/', (_req, res) => res.json({ message: 'Backend is running (Full App in API)' }))
-app.get('/api/health', (_req, res) => res.json({ ok: true, mode: 'Full API', timestamp: new Date().toISOString() }))
+app.get('/', (_req, res) => res.json({ message: 'Backend is running (Auth Phase)' }))
+app.get('/api/health', (_req, res) => res.json({ ok: true, mode: 'Auth Phase', timestamp: new Date().toISOString() }))
 
 // Diagnostic Route to inspect file system
 app.get('/api/debug-files', (_req, res) => {
     try {
+        const cwd = process.cwd()
         const possiblePaths = [
-            path.join(process.cwd(), 'server', 'src', 'models'),
-            path.join(__dirname, '..', 'server', 'src', 'models'),
-            path.join(process.cwd(), 'api'),
-            process.cwd()
+            path.join(cwd, 'api', 'models'),
+            path.join(cwd, 'server', 'src', 'models'),
+            path.join(cwd, 'api'),
+            cwd
         ]
         const results: any = {}
         possiblePaths.forEach(p => {
@@ -125,7 +79,7 @@ app.get('/api/debug-files', (_req, res) => {
                 results[p] = `ERROR: ${err.message}`
             }
         })
-        res.json({ env: process.env.NODE_ENV, scan: results })
+        res.json({ env: process.env.NODE_ENV, cwd, scan: results })
     } catch (err: any) {
         res.status(500).json({ error: err.message })
     }
@@ -144,13 +98,7 @@ app.use(async (_req, _res, next) => {
 })
 
 // Routes
-// app.use('/api', publicRoutes)
-// // app.use('/api/auth', authRoutes)
-// app.use('/api/subscriptions', subscriptionRoutes)
-// app.use('/api/admin', adminRoutes)
-// app.use('/api/subjects', subjectRoutes)
-// app.use('/api/teacher', teacherRoutes)
-// app.use('/api/student', studentRoutes)
+app.use('/api/auth', authRoutes)
 
 app.use((_req, res) => res.status(404).json({ error: 'Not found' }))
 

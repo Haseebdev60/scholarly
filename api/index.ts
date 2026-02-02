@@ -23,9 +23,12 @@ import publicRoutes from '../server/src/routes/public.routes'
 // console.log('DEBUG: Subject model imported', Subject ? 'OK' : 'FAIL')
 
 // INLINE DEBUG MODEL
-const InlineUserSchema = new mongoose.Schema({ name: String });
-const InlineUser = mongoose.models.InlineUser || mongoose.model('InlineUser', InlineUserSchema);
-console.log('DEBUG: InlineUser model created', InlineUser ? 'OK' : 'FAIL')
+// const InlineUserSchema = new mongoose.Schema({ name: String });
+// const InlineUser = mongoose.models.InlineUser || mongoose.model('InlineUser', InlineUserSchema);
+// console.log('DEBUG: InlineUser model created', InlineUser ? 'OK' : 'FAIL')
+
+import TestUser from './models/TestUser'
+console.log('DEBUG: TestUser (local) model imported', TestUser ? 'OK' : 'FAIL')
 
 // Seed Data
 const seedData = [

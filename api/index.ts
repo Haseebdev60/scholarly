@@ -1,4 +1,4 @@
-console.log('[DEBUG] Starting api/index.ts (Auth Migration Phase)')
+console.log('[DEBUG] Starting api/index.ts (Auth Only - Fixed)')
 import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
@@ -10,14 +10,14 @@ import fs from 'fs'
 // Local Route Imports (ESM)
 import authRoutes from './routes/auth.routes.js'
 
-// import publicRoutes from '../server/src/routes/public.routes'
-// app.use('/api', publicRoutes)
+// NO publicRoutes usage here
+// NO Subject usage here
 
 const MONGO_URI = process.env.MONGO_URI
 
 const app = express()
 
-// CORS Configuration
+// CORS
 app.use(cors({
     origin: (origin, callback) => {
         const allowed = [process.env.FRONTEND_URL, 'http://localhost:5173', 'http://localhost:3000']
@@ -35,7 +35,6 @@ app.use(express.json({ limit: '50mb' }))
 app.use(express.urlencoded({ limit: '50mb', extended: true }))
 app.use(morgan('dev'))
 
-// DB Connection Logic
 const connectDB = async () => {
     try {
         let uri = MONGO_URI
@@ -43,7 +42,6 @@ const connectDB = async () => {
             console.error('MONGO_URI is missing!')
             return
         }
-
         if (mongoose.connection.readyState === 0) {
             await mongoose.connect(uri, { serverSelectionTimeoutMS: 5000 })
             console.log('MongoDB connected')
@@ -53,11 +51,9 @@ const connectDB = async () => {
     }
 }
 
-// Health Checks
-app.get('/', (_req, res) => res.json({ message: 'Backend is running (Auth Phase)' }))
-app.get('/api/health', (_req, res) => res.json({ ok: true, mode: 'Auth Phase', timestamp: new Date().toISOString() }))
+app.get('/', (_req, res) => res.json({ message: 'Backend is running (Auth Only Phase)' }))
+app.get('/api/health', (_req, res) => res.json({ ok: true, mode: 'Auth Only Phase', timestamp: new Date().toISOString() }))
 
-// Diagnostic Route to inspect file system
 app.get('/api/debug-files', (_req, res) => {
     try {
         const cwd = process.cwd()
@@ -85,29 +81,21 @@ app.get('/api/debug-files', (_req, res) => {
     }
 })
 
-// Middleware to ensure DB connection
 app.use(async (_req, _res, next) => {
     if (mongoose.connection.readyState === 0 || mongoose.connection.readyState === 99) {
-        try {
-            await connectDB()
-        } catch (err) {
-            console.error('DB Connect Middleware Error:', err)
-        }
+        await connectDB().catch(e => console.error(e))
     }
     next()
 })
 
-// Routes
 app.use('/api/auth', authRoutes)
 
 app.use((_req, res) => res.status(404).json({ error: 'Not found' }))
 
-// Global Error Handler
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     console.error('Global Error:', err)
     res.status(500).json({
-        error: err.message || 'Internal Server Error',
-        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+        error: err.message || 'Internal Server Error'
     })
 })
 

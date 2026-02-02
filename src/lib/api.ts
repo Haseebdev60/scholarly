@@ -3,7 +3,18 @@
  * Base URL: http://localhost:4000/api
  */
 
-const API_BASE = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:4000/api')
+const envUrl = import.meta.env.VITE_API_URL
+const isProd = import.meta.env.PROD
+const localUrl = 'http://localhost:4000/api'
+
+let baseUrl = envUrl || (isProd ? '/api' : localUrl)
+
+// Ensure base URL ends with /api if it's an absolute URL
+if (baseUrl.startsWith('http') && !baseUrl.endsWith('/api')) {
+  baseUrl = `${baseUrl}/api`
+}
+
+const API_BASE = baseUrl
 
 type ApiEnvelope<T> = {
   success?: boolean

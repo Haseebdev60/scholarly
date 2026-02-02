@@ -27,8 +27,8 @@ import publicRoutes from '../server/src/routes/public.routes'
 // const InlineUser = mongoose.models.InlineUser || mongoose.model('InlineUser', InlineUserSchema);
 // console.log('DEBUG: InlineUser model created', InlineUser ? 'OK' : 'FAIL')
 
-import TestUser from './models/TestUser'
-console.log('DEBUG: TestUser (local) model imported', TestUser ? 'OK' : 'FAIL')
+import TestUser from './models/TestUser.js'
+console.log('DEBUG: TestUser (local + .js) model imported', TestUser ? 'OK' : 'FAIL')
 
 // Seed Data
 const seedData = [

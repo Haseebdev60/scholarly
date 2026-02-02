@@ -17,10 +17,15 @@ import subjectRoutes from '../server/src/routes/subject.routes'
 import publicRoutes from '../server/src/routes/public.routes'
 
 // Import Models
-import Subject from '../server/src/models/Subject'
+// import Subject from '../server/src/models/Subject'
 // import User from '../server/src/models/User'
 // import Debug from '../server/src/models/Debug'
-console.log('DEBUG: Subject model imported', Subject ? 'OK' : 'FAIL')
+// console.log('DEBUG: Subject model imported', Subject ? 'OK' : 'FAIL')
+
+// INLINE DEBUG MODEL
+const InlineUserSchema = new mongoose.Schema({ name: String });
+const InlineUser = mongoose.models.InlineUser || mongoose.model('InlineUser', InlineUserSchema);
+console.log('DEBUG: InlineUser model created', InlineUser ? 'OK' : 'FAIL')
 
 // Seed Data
 const seedData = [

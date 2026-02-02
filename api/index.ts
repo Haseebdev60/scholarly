@@ -18,9 +18,9 @@ import publicRoutes from '../server/src/routes/public.routes'
 
 // Import Models
 import Subject from '../server/src/models/Subject'
-import User from '../server/src/models/User'
+// import User from '../server/src/models/User'
 // import Debug from '../server/src/models/Debug'
-console.log('DEBUG: User model imported', User ? 'OK' : 'FAIL')
+console.log('DEBUG: Subject model imported', Subject ? 'OK' : 'FAIL')
 
 // Seed Data
 const seedData = [

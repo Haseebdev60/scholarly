@@ -1,102 +1,88 @@
-console.log('[DEBUG] Starting api/index.ts (Auth Only - Fixed)')
+console.log('[DEBUG] Starting api/index.ts (Full Migration)')
 import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
-import morgan from 'morgan'
 import mongoose from 'mongoose'
 import path from 'path'
-import fs from 'fs'
+import { fileURLToPath } from 'url'
+import morgan from 'morgan'
 
-// Local Route Imports (ESM)
+// Routes (ESM Imports with .js)
 import authRoutes from './routes/auth.routes.js'
+import studentRoutes from './routes/student.routes.js'
+import teacherRoutes from './routes/teacher.routes.js'
+import adminRoutes from './routes/admin.routes.js'
+import subscriptionRoutes from './routes/subscription.routes.js'
+import subjectRoutes from './routes/subject.routes.js'
+import publicRoutes from './routes/public.routes.js'
 
-// NO publicRoutes usage here
-// NO Subject usage here
-
-const MONGO_URI = process.env.MONGO_URI
+// --- ESM FIXES ---
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 const app = express()
 
-// CORS
+// Middleware
+app.use(morgan('dev'))
+app.use(express.json())
+
+// CORS Configuration
+const allowedOrigins = [
+    'http://localhost:5173',
+    process.env.FRONTEND_URL,
+    process.env.VITE_API_URL,
+    'https://scholarly-frontend.vercel.app'
+].filter(Boolean)
+
 app.use(cors({
     origin: (origin, callback) => {
-        const allowed = [process.env.FRONTEND_URL, 'http://localhost:5173', 'http://localhost:3000']
-        if (!origin || allowed.includes(origin) || (origin && origin.endsWith('.vercel.app'))) {
+        if (!origin || allowedOrigins.some(o => origin.startsWith(o as string))) {
             callback(null, true)
         } else {
-            console.log(`[CORS WARN] Blocked: ${origin}`)
-            callback(null, false)
+            console.log('[CORS] Blocked:', origin)
+            callback(null, false) // Strict for prod
         }
     },
     credentials: true
 }))
 
-app.use(express.json({ limit: '50mb' }))
-app.use(express.urlencoded({ limit: '50mb', extended: true }))
-app.use(morgan('dev'))
-
+// Database
 const connectDB = async () => {
     try {
-        let uri = MONGO_URI
-        if (!uri) {
-            console.error('MONGO_URI is missing!')
-            return
-        }
-        if (mongoose.connection.readyState === 0) {
-            await mongoose.connect(uri, { serverSelectionTimeoutMS: 5000 })
-            console.log('MongoDB connected')
-        }
+        if (mongoose.connection.readyState === 1) return
+        await mongoose.connect(process.env.MONGO_URI || '')
+        console.log('[MongoDB] Connected')
     } catch (err) {
-        console.error('MongoDB connection error', err)
+        console.error('[MongoDB] Error:', err)
     }
 }
+connectDB()
 
-app.get('/', (_req, res) => res.json({ message: 'Backend is running (Auth Only Phase)' }))
-app.get('/api/health', (_req, res) => res.json({ ok: true, mode: 'Auth Only Phase', timestamp: new Date().toISOString() }))
-
-app.get('/api/debug-files', (_req, res) => {
-    try {
-        const cwd = process.cwd()
-        const possiblePaths = [
-            path.join(cwd, 'api', 'models'),
-            path.join(cwd, 'server', 'src', 'models'),
-            path.join(cwd, 'api'),
-            cwd
-        ]
-        const results: any = {}
-        possiblePaths.forEach(p => {
-            try {
-                if (fs.existsSync(p)) {
-                    results[p] = fs.readdirSync(p)
-                } else {
-                    results[p] = 'NOT FOUND'
-                }
-            } catch (err: any) {
-                results[p] = `ERROR: ${err.message}`
-            }
-        })
-        res.json({ env: process.env.NODE_ENV, cwd, scan: results })
-    } catch (err: any) {
-        res.status(500).json({ error: err.message })
-    }
-})
-
-app.use(async (_req, _res, next) => {
-    if (mongoose.connection.readyState === 0 || mongoose.connection.readyState === 99) {
-        await connectDB().catch(e => console.error(e))
-    }
-    next()
-})
-
+// --- ROUTES ---
 app.use('/api/auth', authRoutes)
+app.use('/api/student', studentRoutes)
+app.use('/api/teacher', teacherRoutes)
+app.use('/api/admin', adminRoutes)
+app.use('/api/subscriptions', subscriptionRoutes)
+app.use('/api/subjects', subjectRoutes)
+app.use('/api/public', publicRoutes)
 
-app.use((_req, res) => res.status(404).json({ error: 'Not found' }))
-
-app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-    console.error('Global Error:', err)
-    res.status(500).json({
-        error: err.message || 'Internal Server Error'
-    })
+// Health Check
+app.get('/api/health', (req, res) => {
+    res.json({ ok: true, mode: 'Full Migration Phase' })
 })
 
+// Global Error Handler
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error('[API Error]', err)
+    res.status(500).json({ error: err.message || 'Internal Server Error' })
+})
+
+// Export for Vercel
 export default app
+
+// Local Dev Server
+if (process.env.NODE_ENV !== 'production') {
+    const PORT = process.env.PORT || 4000
+    app.listen(PORT, () => console.log(`[API] Running on port ${PORT}`))
+}

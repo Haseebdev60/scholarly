@@ -60,6 +60,14 @@ const connectDB = async () => {
 }
 connectDB()
 
+// Ensure DB is connected before processing
+app.use(async (_req, _res, next) => {
+    if (mongoose.connection.readyState === 0 || mongoose.connection.readyState === 99) {
+        await connectDB()
+    }
+    next()
+})
+
 // --- ROUTES ---
 app.use('/api/auth', authRoutes)
 app.use('/api/student', studentRoutes)

@@ -84,9 +84,9 @@ const Home = ({ onOpenAuth, onMessage }: HomeProps) => {
 
                 {/* Floating Notification */}
                 <div className="absolute -left-8 top-12 z-20 animate-bounce duration-[8s]">
-                  <div className="bg-white rounded-2xl p-4 shadow-lg border border-slate-100 flex items-center gap-3 w-64">
-                    <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center text-green-600">
-                      <CheckBadgeIcon className="h-6 w-6" />
+                  <div className="bg-white rounded-2xl p-5 shadow-xl border border-slate-100 flex items-center gap-4 w-72">
+                    <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center text-green-600 flex-shrink-0">
+                      <CheckBadgeIcon className="h-7 w-7" />
                     </div>
                     <div>
                       <div className="text-sm font-bold text-slate-900">Quiz Completed</div>
@@ -113,8 +113,8 @@ const Home = ({ onOpenAuth, onMessage }: HomeProps) => {
                         alt="Lecture"
                         className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:scale-105 transition-transform duration-700"
                       />
-                      <div className="h-16 w-16 rounded-full bg-white/20 backdrop-blur flex items-center justify-center text-white group-hover:scale-110 transition-all z-10 border border-white/30">
-                        <PlayCircleIcon className="h-8 w-8" />
+                      <div className="h-20 w-20 rounded-full bg-white/20 backdrop-blur flex items-center justify-center text-white group-hover:scale-110 transition-all z-10 border border-white/30 pl-1 shadow-2xl">
+                        <PlayCircleIcon className="h-10 w-10" />
                       </div>
 
                       {/* Player Controls Mockup */}

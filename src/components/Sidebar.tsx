@@ -19,6 +19,15 @@ export const Sidebar = ({ items }: SidebarProps) => {
     return (
         <aside className="sticky top-16 z-30 hidden h-[calc(100vh-4rem)] w-64 shrink-0 border-r border-slate-200 bg-white lg:block">
             <div className="flex h-full flex-col gap-1 p-4">
+                <div className="mb-6 px-4 flex items-center gap-2.5">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-brand-600 to-brand-700 text-white shadow-md">
+                        <span className="text-sm font-bold">Ed</span>
+                    </div>
+                    <div className="leading-none">
+                        <div className="text-sm font-bold text-slate-900 tracking-tight">Scholarly</div>
+                        <div className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Dashboard</div>
+                    </div>
+                </div>
                 {items.map((item) => (
                     <NavLink
                         key={item.label}

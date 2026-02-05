@@ -1,18 +1,18 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function (o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
     if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
+        desc = { enumerable: true, get: function () { return m[k]; } };
     }
     Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
+}) : (function (o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
 }));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function (o, v) {
     Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
+}) : function (o, v) {
     o["default"] = v;
 });
 var __importStar = (this && this.__importStar) || function (mod) {
@@ -329,5 +329,19 @@ router.post('/message', async (req, res) => {
         read: false
     });
     res.json(msg);
+});
+// POST /api/admin/set-hero-resource
+router.post('/set-hero-resource', async (req, res) => {
+    const { resourceId } = req.body ?? {};
+    if (!resourceId)
+        return res.status(400).json({ error: 'Missing resourceId' });
+    const Resource = (await import('../models/Resource')).default;
+    // Unset all hero videos first
+    await Resource.updateMany({}, { isHero: false });
+    // Set the new hero video
+    const resource = await Resource.findByIdAndUpdate(resourceId, { isHero: true }, { new: true });
+    if (!resource)
+        return res.status(404).json({ error: 'Resource not found' });
+    res.json(resource);
 });
 exports.default = router;

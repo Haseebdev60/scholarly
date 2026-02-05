@@ -37,26 +37,31 @@ export const features = [
     title: 'Access Past Papers',
     description: 'Find curated exam banks by subject, level, and year to sharpen exam readiness.',
     badge: 'Revision',
+    link: '/downloads'
   },
   {
     title: 'Recorded Lectures',
     description: 'High-quality recordings with notes, transcripts, and highlight timestamps.',
     badge: 'On-demand',
+    link: '/downloads'
   },
   {
     title: 'Interactive Quizzes',
     description: 'Timed quizzes with instant feedback to track mastery by topic.',
     badge: 'Assessments',
+    link: '/quizzes'
   },
   {
     title: 'AI Assistant',
     description: 'Generate practice sets or check quiz answers with AI oversight.',
     badge: 'Smart help',
+    link: '/quizzes'
   },
   {
     title: 'Flexible Plans',
     description: 'Monthly, 6-month, and yearly plans so students and schools can scale easily.',
     badge: 'Subscriptions',
+    link: '/auth'
   },
 ]
 

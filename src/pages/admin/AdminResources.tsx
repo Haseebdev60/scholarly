@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { adminApi, publicApi } from '../../lib/api'
 import Button from '../../components/Button'
+import Badge from '../../components/Badge'
 import Card from '../../components/Card'
 import Modal from '../../components/Modal'
 import FormField from '../../components/FormField'
@@ -10,7 +11,8 @@ import {
     TrashIcon,
     DocumentArrowUpIcon,
     FilmIcon,
-    ArrowUpTrayIcon
+    ArrowUpTrayIcon,
+    StarIcon
 } from '@heroicons/react/24/outline'
 
 const AdminResources = () => {
@@ -214,7 +216,21 @@ const AdminResources = () => {
                                                 <div className="text-xs text-slate-500 uppercase">{video.type} • {video.uploadedBy ? `By ${video.uploadedBy}` : 'Unknown'}</div>
                                             </div>
                                         </div>
-                                        <Button variant="ghost" className="shrink-0 p-2 text-slate-500 hover:text-red-600 hover:bg-red-50" onClick={() => handleDeleteResource(video._id)} title="Delete Video"><TrashIcon className="h-5 w-5" /></Button>
+                                        <div className="flex items-center gap-1">
+                                            {(video as any).isHero ? (
+                                                <Badge color="amber">Hero Video</Badge>
+                                            ) : (
+                                                <Button variant="ghost" className="shrink-0 p-2 text-slate-400 hover:text-amber-500 hover:bg-amber-50" onClick={async () => {
+                                                    try {
+                                                        await adminApi.setHeroResource(video._id);
+                                                        loadData();
+                                                    } catch (e: any) { alert(e.message) }
+                                                }} title="Set as Home Video">
+                                                    <StarIcon className="h-5 w-5" />
+                                                </Button>
+                                            )}
+                                            <Button variant="ghost" className="shrink-0 p-2 text-slate-500 hover:text-red-600 hover:bg-red-50" onClick={() => handleDeleteResource(video._id)} title="Delete Video"><TrashIcon className="h-5 w-5" /></Button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>

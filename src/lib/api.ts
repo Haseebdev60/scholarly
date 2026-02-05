@@ -474,6 +474,13 @@ export const adminApi = {
     })
   },
 
+  setHeroResource: async (resourceId: string) => {
+    return request<{ _id: string; isHero: boolean }>('/admin/set-hero-resource', {
+      method: 'POST',
+      body: JSON.stringify({ resourceId }),
+    })
+  },
+
   getConversations: async () => {
     return request<Array<{
       _id: string

@@ -21,6 +21,19 @@ const Home = ({ onOpenAuth, onMessage }: HomeProps) => {
       .catch(console.error)
   }, [])
 
+  /* Hero Video Logic */
+  const [heroVideo, setHeroVideo] = useState<{ url: string; type: string; thumbnail?: string } | null>(null)
+
+  useEffect(() => {
+    // Fetch hero video if available
+    import('../lib/api').then(({ publicApi }) => {
+      publicApi.getResources('video').then(resources => {
+        const hero = resources.find(r => (r as any).isHero)
+        if (hero) setHeroVideo(hero)
+      }).catch(err => console.error(err))
+    })
+  }, [])
+
   return (
     <div className="overflow-x-hidden">
       {/* Hero Section */}
@@ -146,18 +159,21 @@ const Home = ({ onOpenAuth, onMessage }: HomeProps) => {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, idx) => (
-              <Card key={feature.title} className="group hover:-translate-y-2 transition-all duration-300 border-none shadow-card hover:shadow-card-hover bg-slate-50/50">
-                <div className="h-12 w-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-brand-600 mb-6 group-hover:scale-110 transition-transform">
-                  {idx === 0 && <AcademicCapIcon className="h-6 w-6" />}
-                  {idx === 1 && <PlayCircleIcon className="h-6 w-6" />}
-                  {idx === 2 && <UserGroupIcon className="h-6 w-6" />}
-                  {idx === 3 && <BoltIcon className="h-6 w-6" />}
-                </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-3">{feature.title}</h3>
-                <p className="text-slate-600 leading-relaxed text-sm">
-                  {feature.description}
-                </p>
-              </Card>
+              <Link to={feature.link} key={feature.title} className="block">
+                <Card className="group hover:-translate-y-2 transition-all duration-300 border-none shadow-card hover:shadow-card-hover bg-slate-50/50 h-full cursor-pointer">
+                  <div className="h-12 w-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-brand-600 mb-6 group-hover:scale-110 transition-transform">
+                    {idx === 0 && <AcademicCapIcon className="h-6 w-6" />}
+                    {idx === 1 && <PlayCircleIcon className="h-6 w-6" />}
+                    {idx === 2 && <UserGroupIcon className="h-6 w-6" />}
+                    {idx === 3 && <BoltIcon className="h-6 w-6" />}
+                    {idx === 4 && <AcademicCapIcon className="h-6 w-6" />}
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-brand-600 transition-colors">{feature.title}</h3>
+                  <p className="text-slate-600 leading-relaxed text-sm">
+                    {feature.description}
+                  </p>
+                </Card>
+              </Link>
             ))}
           </div>
         </div>
@@ -234,7 +250,7 @@ const Home = ({ onOpenAuth, onMessage }: HomeProps) => {
               <p className="text-slate-400 text-lg mb-8">
                 From high school students to lifelong learners, Scholarly is changing the way people prepare for their future.
               </p>
-              <Button size="lg" className="bg-white text-slate-900 hover:bg-slate-100 border-none" onClick={() => onOpenAuth('register', 'student')}>
+              <Button size="lg" className="bg-white !text-slate-900 hover:bg-slate-100 border-none font-bold" onClick={() => onOpenAuth('register', 'student')}>
                 Join the Community
               </Button>
             </div>

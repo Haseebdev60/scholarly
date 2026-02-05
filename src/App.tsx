@@ -12,7 +12,9 @@ import About from './pages/About'
 import AuthPage from './pages/AuthPage'
 import Courses from './pages/Courses'
 import Home from './pages/Home'
+import Downloads from './pages/Downloads'
 import Quizzes from './pages/Quizzes'
+import AIChatBot from './components/AIChatBot'
 import StudentDashboard from './pages/StudentDashboard'
 import TeacherDashboard from './pages/TeacherDashboard'
 import Teachers from './pages/Teachers'
@@ -72,6 +74,7 @@ const AppContent = () => {
           <Route path="/" element={<Home onOpenAuth={openAuth} onMessage={(id, name) => openMessage(id, name)} />} />
           <Route path="/about" element={<About />} />
           <Route path="/courses" element={<Courses onEnroll={() => openAuth('register', 'student')} />} />
+          <Route path="/downloads" element={<Downloads />} />
 
 
           <Route
@@ -91,7 +94,9 @@ const AppContent = () => {
         </Routes>
       </main>
 
+
       <Footer />
+      <AIChatBot />
 
 
 

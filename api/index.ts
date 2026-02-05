@@ -1,4 +1,4 @@
-console.log('[DEBUG] Starting api/index.ts (Full Migration)')
+console.log('[DEBUG] Starting api/index.ts (Refactored Backend)')
 import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
@@ -7,14 +7,14 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import morgan from 'morgan'
 
-// Routes (ESM Imports with .js)
-import authRoutes from './routes/auth.routes.js'
-import studentRoutes from './routes/student.routes.js'
-import teacherRoutes from './routes/teacher.routes.js'
-import adminRoutes from './routes/admin.routes.js'
-import subscriptionRoutes from './routes/subscription.routes.js'
-import subjectRoutes from './routes/subject.routes.js'
-import publicRoutes from './routes/public.routes.js'
+// Routes (Import from backend/ folder)
+import authRoutes from '../backend/routes/auth.routes.js'
+import studentRoutes from '../backend/routes/student.routes.js'
+import teacherRoutes from '../backend/routes/teacher.routes.js'
+import adminRoutes from '../backend/routes/admin.routes.js'
+import subscriptionRoutes from '../backend/routes/subscription.routes.js'
+import subjectRoutes from '../backend/routes/subject.routes.js'
+import publicRoutes from '../backend/routes/public.routes.js'
 
 // --- ESM FIXES ---
 const __filename = fileURLToPath(import.meta.url)
@@ -24,7 +24,8 @@ const app = express()
 
 // Middleware
 app.use(morgan('dev'))
-app.use(express.json())
+app.use(express.json({ limit: '50mb' }))
+app.use(express.urlencoded({ limit: '50mb', extended: true }))
 
 // CORS Configuration
 const allowedOrigins = [
@@ -36,11 +37,12 @@ const allowedOrigins = [
 
 app.use(cors({
     origin: (origin, callback) => {
-        if (!origin || allowedOrigins.some(o => origin.startsWith(o as string))) {
+        // Allow requests from Vercel deployments and localhost
+        if (!origin || allowedOrigins.some(o => origin.startsWith(o as string)) || origin.endsWith('.vercel.app')) {
             callback(null, true)
         } else {
             console.log('[CORS] Blocked:', origin)
-            callback(null, false) // Strict for prod
+            callback(null, false)
         }
     },
     credentials: true
@@ -69,7 +71,7 @@ app.use('/api/public', publicRoutes)
 
 // Health Check
 app.get('/api/health', (req, res) => {
-    res.json({ ok: true, mode: 'Full Migration Phase' })
+    res.json({ ok: true, mode: 'Full Migration Phase (Refactored)' })
 })
 
 // Global Error Handler

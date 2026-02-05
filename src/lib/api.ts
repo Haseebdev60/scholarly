@@ -10,8 +10,13 @@ const localUrl = 'http://localhost:4000/api'
 let baseUrl = envUrl || (isProd ? '/api' : localUrl)
 
 // Ensure base URL ends with /api if it's an absolute URL
-if (baseUrl.startsWith('http') && !baseUrl.endsWith('/api')) {
-  baseUrl = `${baseUrl}/api`
+if (baseUrl.startsWith('http')) {
+  // Remove trailing slash if present
+  baseUrl = baseUrl.replace(/\/$/, '')
+  // Append /api if not present
+  if (!baseUrl.endsWith('/api')) {
+    baseUrl = `${baseUrl}/api`
+  }
 }
 
 const API_BASE = baseUrl

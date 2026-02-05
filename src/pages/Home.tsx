@@ -82,18 +82,6 @@ const Home = ({ onOpenAuth, onMessage }: HomeProps) => {
               <div className="relative rounded-3xl bg-white/40 backdrop-blur-xl p-4 border border-white/50 shadow-2xl overflow-hidden glass">
                 <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-white/20 to-transparent pointer-events-none" />
 
-                {/* Floating Notification */}
-                <div className="absolute -left-8 top-12 z-20 animate-bounce duration-[8s]">
-                  <div className="bg-white rounded-2xl p-5 shadow-xl border border-slate-100 flex items-center gap-4 w-72">
-                    <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center text-green-600 flex-shrink-0">
-                      <CheckBadgeIcon className="h-7 w-7" />
-                    </div>
-                    <div>
-                      <div className="text-sm font-bold text-slate-900">Quiz Completed</div>
-                      <div className="text-xs text-slate-500">You scored 95% in Physics</div>
-                    </div>
-                  </div>
-                </div>
 
                 {/* Mockup Content */}
                 <div className="rounded-2xl bg-white shadow-inner overflow-hidden relative">

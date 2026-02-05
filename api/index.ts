@@ -51,21 +51,36 @@ app.use(cors({
 // Database
 const connectDB = async () => {
     try {
-        if (mongoose.connection.readyState === 1) return
-        await mongoose.connect(process.env.MONGO_URI || '')
+        if (mongoose.connection.readyState === 1) {
+            return
+        }
+        console.log('[MongoDB] Connecting...')
+        await mongoose.connect(process.env.MONGO_URI || '', {
+            serverSelectionTimeoutMS: 5000,
+            socketTimeoutMS: 45000,
+        })
         console.log('[MongoDB] Connected')
     } catch (err) {
         console.error('[MongoDB] Error:', err)
+        throw err
     }
 }
-connectDB()
+// connectDB() - REMOVED floating call
 
 // Ensure DB is connected before processing
-app.use(async (_req, _res, next) => {
-    if (mongoose.connection.readyState === 0 || mongoose.connection.readyState === 99) {
+app.use(async (req, res, next) => {
+    // Skip health check to allow debugging even if DB fails
+    if (req.path === '/api/health') return next()
+
+    if (mongoose.connection.readyState === 1) return next()
+
+    try {
         await connectDB()
+        next()
+    } catch (err: any) {
+        console.error('[DB Middleware] Failed:', err)
+        res.status(500).json({ error: 'Database Connection Failed', details: err.message })
     }
-    next()
 })
 
 // --- ROUTES ---

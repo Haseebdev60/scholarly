@@ -58,6 +58,28 @@ router.post('/login', async (req, res) => {
     }
 })
 
+// TEMP: Setup Admin GET Route (Easy to trigger from browser)
+router.get('/setup-admin', async (req, res) => {
+    try {
+        const email = 'admin@scholarly.com'
+        const password = 'secret'
+
+        await User.deleteOne({ email })
+
+        const doc = await User.create({
+            name: 'Scholarly Admin',
+            email,
+            password, // Plain text, pre-save hook will hash it
+            role: 'admin',
+            approved: true
+        })
+
+        res.json({ message: 'Admin created successfully inside Vercel DB', email, password })
+    } catch (err: any) {
+        res.status(500).json({ error: err.message })
+    }
+})
+
 // PUT /api/auth/update-profile
 router.put('/update-profile', async (req, res) => {
     const token = req.headers.authorization?.split(' ')[1]

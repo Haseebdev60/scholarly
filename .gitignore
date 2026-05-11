@@ -28,3 +28,4 @@ brain/
 
 # Generated Serverless Files
 api/index.js
+.vercel

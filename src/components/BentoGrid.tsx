@@ -10,7 +10,7 @@ export const BentoGrid = ({ className, children }: { className?: string; childre
   )
 }
 
-interface BentoGridItemProps extends HTMLMotionProps<"div"> {
+interface BentoGridItemProps extends Omit<HTMLMotionProps<"div">, "title"> {
   className?: string
   title?: string | React.ReactNode
   description?: string | React.ReactNode

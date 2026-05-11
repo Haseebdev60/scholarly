@@ -1,10 +1,9 @@
-import { useState } from 'react'
-
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { BrowserRouter, Route, Routes, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from './contexts/AuthContext'
 import { studentApi } from './lib/api'
+import Lenis from 'lenis'
 
-import AuthModal from './components/AuthModal'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import Button from './components/Button'
@@ -21,15 +20,19 @@ import Teachers from './pages/Teachers'
 import MessageModal from './components/MessageModal'
 import AdminDashboard from './pages/AdminDashboard'
 import ErrorBoundary from './components/ErrorBoundary'
+import AnimatedCursor from './components/AnimatedCursor'
 
-type AuthMode = 'login' | 'register'
-type Role = 'student' | 'teacher' | 'admin'
+const ScrollToTop = () => {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [pathname])
+  return null
+}
 
 const AppContent = () => {
   const { user } = useAuth()
-  const [authOpen, setAuthOpen] = useState(false)
-  const [authMode, setAuthMode] = useState<AuthMode>('login')
-  const [authRole, setAuthRole] = useState<Role>('student')
+  const navigate = useNavigate()
   const [notice, setNotice] = useState<string | null>(null)
 
   // Messaging State
@@ -37,15 +40,13 @@ const AppContent = () => {
   const [messageRecipient, setMessageRecipient] = useState<string | null>(null)
   const [messageRecipientId, setMessageRecipientId] = useState<string | null>(null)
 
-  const openAuth = (mode: AuthMode, role: Role = 'student') => {
-    setAuthMode(mode)
-    setAuthRole(role) // Default, but user can change in modal
-    setAuthOpen(true)
+  const handleOpenAuth = (mode: 'login' | 'register' = 'login') => {
+    navigate(`/auth?mode=${mode}`)
   }
 
   const openMessage = (id: string, teacherName: string) => {
     if (!user) {
-      openAuth('login', 'student')
+      handleOpenAuth('login')
       return
     }
     setMessageRecipient(teacherName)
@@ -63,20 +64,18 @@ const AppContent = () => {
     }
   }
 
-
-
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50">
-      <Navbar onLogin={() => openAuth('login')} onSignup={() => openAuth('register')} />
+    <div className="flex min-h-screen flex-col bg-slate-50 dark:bg-slate-950 transition-colors duration-300 text-slate-900 dark:text-slate-100">
+      <ScrollToTop />
+      <AnimatedCursor />
+      <Navbar onLogin={() => handleOpenAuth('login')} onSignup={() => handleOpenAuth('register')} />
 
-      <main className="flex-1">
+      <main className="flex-1 flex flex-col pt-16"> {/* Added pt-16 for sticky navbar */}
         <Routes>
-          <Route path="/" element={<Home onOpenAuth={openAuth} onMessage={(id, name) => openMessage(id, name)} />} />
+          <Route path="/" element={<Home onOpenAuth={handleOpenAuth} onMessage={(id, name) => openMessage(id, name)} />} />
           <Route path="/about" element={<About />} />
-          <Route path="/courses" element={<Courses onEnroll={() => openAuth('register', 'student')} />} />
+          <Route path="/courses" element={<Courses onEnroll={() => handleOpenAuth('register')} />} />
           <Route path="/downloads" element={<Downloads />} />
-
-
           <Route
             path="/teachers"
             element={
@@ -90,35 +89,24 @@ const AppContent = () => {
           <Route path="/dashboard/student" element={<StudentDashboard />} />
           <Route path="/dashboard/teacher/*" element={<TeacherDashboard />} />
           <Route path="/dashboard/admin/*" element={<AdminDashboard />} />
-          <Route path="*" element={<Home onOpenAuth={openAuth} onMessage={(id, name) => openMessage(id, name)} />} />
+          <Route path="*" element={<Home onOpenAuth={handleOpenAuth} onMessage={(id, name) => openMessage(id, name)} />} />
         </Routes>
       </main>
-
 
       <Footer />
       <AIChatBot />
 
-
-
-      <AuthModal
-        open={authOpen}
-        onClose={() => setAuthOpen(false)}
-        initialMode={authMode}
-        initialRole={authRole}
-      />
-
       {notice && (
-        <div className="fixed bottom-4 right-4 max-w-xs rounded-xl bg-white p-4 shadow-soft ring-1 ring-slate-200 z-50 animate-fade-in">
-          <div className="text-sm font-semibold text-slate-900">Notification</div>
-          <div className="text-sm text-slate-600">{notice}</div>
+        <div className="fixed bottom-4 right-4 max-w-xs rounded-xl bg-white dark:bg-slate-900 p-4 shadow-soft ring-1 ring-slate-200 dark:ring-slate-800 z-50 animate-fade-in-up">
+          <div className="text-sm font-semibold text-slate-900 dark:text-white">Notification</div>
+          <div className="text-sm text-slate-600 dark:text-slate-400">{notice}</div>
           <div className="mt-2 flex justify-end">
-            <Button variant="ghost" className="text-xs" onClick={() => setNotice(null)}>
+            <Button variant="ghost" className="text-xs dark:text-slate-300" onClick={() => setNotice(null)}>
               Dismiss
             </Button>
           </div>
         </div>
       )}
-
 
       <MessageModal
         isOpen={messageOpen}
@@ -131,6 +119,28 @@ const AppContent = () => {
 }
 
 const App = () => {
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: 'vertical',
+      gestureOrientation: 'vertical',
+      smoothWheel: true,
+      touchMultiplier: 2,
+    })
+
+    function raf(time: number) {
+      lenis.raf(time)
+      requestAnimationFrame(raf)
+    }
+
+    requestAnimationFrame(raf)
+
+    return () => {
+      lenis.destroy()
+    }
+  }, [])
+
   return (
     <BrowserRouter>
       <AppContent />

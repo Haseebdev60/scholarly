@@ -34,5 +34,6 @@ const quizSchema = new mongoose_1.Schema({
     subjectId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Subject', required: true },
     questions: { type: [questionSchema], default: [] },
     isPremium: { type: Boolean, default: true },
+    teacherId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User' }, // Optional for AI generated or explicit assignment
 }, { timestamps: true });
 exports.default = mongoose_1.default.model('Quiz', quizSchema);

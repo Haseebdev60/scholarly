@@ -31,7 +31,8 @@ const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const userSchema = new mongoose_1.Schema({
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-    password: { type: String, required: true, select: false },
+    password: { type: String, select: false },
+    googleId: { type: String, unique: true, sparse: true },
     role: { type: String, required: true, enum: ['student', 'teacher', 'admin'] },
     // Student
     subscriptionStatus: {
@@ -56,12 +57,17 @@ const userSchema = new mongoose_1.Schema({
                 }]
         }],
 }, { timestamps: true });
-userSchema.pre('save', async function passwordHash(next) {
-    if (!this.isModified('password'))
+userSchema.pre('save', async function (next) {
+    if (!this.isModified('password') || !this.password)
         return next();
-    const salt = await bcryptjs_1.default.genSalt(10);
-    this.password = await bcryptjs_1.default.hash(this.password, salt);
-    next();
+    try {
+        const salt = await bcryptjs_1.default.genSalt(10);
+        this.password = await bcryptjs_1.default.hash(this.password, salt);
+        next();
+    }
+    catch (err) {
+        next(err);
+    }
 });
 userSchema.methods.comparePassword = async function comparePassword(candidate) {
     return bcryptjs_1.default.compare(candidate, this.password);

@@ -54,7 +54,7 @@ const allowedOrigins = [
 ];
 app.use(cors({
     origin: (origin, callback) => {
-        const allowed = [process.env.FRONTEND_URL, 'http://localhost:5173', 'http://localhost:3000'];
+        const allowed = [process.env.FRONTEND_URL, 'http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000'];
         // Allow server-to-server or mobile (no origin) if needed, otherwise strict
         if (!origin || allowed.includes(origin) || (origin && origin.endsWith('.vercel.app'))) {
             callback(null, true);

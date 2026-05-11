@@ -13,10 +13,11 @@ type AuthContextType = {
   user: User | null
   token: string | null
   isLoading: boolean
-  login: (email: string, password: string) => Promise<void>
+  login: (email: string, password: string) => Promise<User>
+  loginWithGoogle: (credential: string, role: string) => Promise<User>
   // Add a method to manually update user data
   updateUser: (user: User) => void
-  register: (data: { name: string; email: string; password: string; role: 'student' | 'teacher' }) => Promise<void>
+  register: (data: { name: string; email: string; password: string; role: 'student' | 'teacher' }) => Promise<User>
   logout: () => void
   subscriptionStatus: {
     status: string
@@ -76,7 +77,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem('user', JSON.stringify(userData))
   }
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string): Promise<User> => {
     const response = await authApi.login(email, password)
     setToken(response.token)
     setUser(response.user as User)
@@ -86,15 +87,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (response.user.role === 'student') {
       await refreshSubscription()
     }
+    return response.user as User
   }
 
-  const register = async (data: { name: string; email: string; password: string; role: 'student' | 'teacher' }) => {
+  const loginWithGoogle = async (credential: string, role: string): Promise<User> => {
+    const response = await authApi.loginWithGoogle(credential, role)
+    setToken(response.token)
+    setUser(response.user as User)
+    localStorage.setItem('token', response.token)
+    localStorage.setItem('user', JSON.stringify(response.user))
+
+    if (response.user.role === 'student') {
+      await refreshSubscription()
+    }
+    return response.user as User
+  }
+
+  const register = async (data: { name: string; email: string; password: string; role: 'student' | 'teacher' }): Promise<User> => {
     const response = await authApi.register(data)
     setToken(response.token)
     setUser(response.user as User)
     localStorage.setItem('token', response.token)
     localStorage.setItem('user', JSON.stringify(response.user))
     await refreshSubscription()
+    return response.user as User
   }
 
   const logout = () => {
@@ -107,7 +123,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, token, isLoading, login, register, logout, subscriptionStatus, refreshSubscription, updateUser }}
+      value={{ user, token, isLoading, login, loginWithGoogle, register, logout, subscriptionStatus, refreshSubscription, updateUser }}
     >
       {children}
     </AuthContext.Provider>

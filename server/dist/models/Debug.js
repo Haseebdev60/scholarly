@@ -24,21 +24,10 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
-const resourceSchema = new mongoose_1.Schema({
+const subjectSchema = new mongoose_1.Schema({
     title: { type: String, required: true, trim: true },
-    description: { type: String },
-    type: { type: String, enum: ['pdf', 'video', 'link', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'txt'], default: 'link' },
-    url: { type: String, required: true },
-    // Make teacherId/subjectId optional for Admin uploads
-    teacherId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User' },
-    subjectId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Subject' },
-    // New fields
-    uploadedBy: { type: String, enum: ['teacher', 'admin'], default: 'teacher' },
-    fileType: { type: String }, // e.g. 'application/pdf'
+    description: { type: String, default: '' },
+    teacherId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User', default: null },
     isPremium: { type: Boolean, default: false },
-    thumbnail: { type: String },
-    year: { type: String },
-    size: { type: String },
-    format: { type: String },
 }, { timestamps: true });
-exports.default = mongoose_1.default.model('Resource', resourceSchema);
+exports.default = mongoose_1.default.model('Subject', subjectSchema);

@@ -94,6 +94,13 @@ export const authApi = {
     })
   },
 
+  loginWithGoogle: async (credential: string, role: string) => {
+    return request<{ token: string; user: { _id: string; name: string; email: string; role: string } }>('/auth/google', {
+      method: 'POST',
+      body: JSON.stringify({ credential, role }),
+    })
+  },
+
   updateProfile: async (data: { name: string; avatar?: string }) => {
     return request<{ success: boolean; user: any }>('/auth/update-profile', {
       method: 'PUT',

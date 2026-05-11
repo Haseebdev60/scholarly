@@ -1,8 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import Button from './Button'
 import ProfileModal from './ProfileModal'
+import { SunIcon, MoonIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
+import { motion, useScroll } from 'framer-motion'
 
 type NavbarProps = {
   onLogin: (role: 'student' | 'teacher' | 'admin') => void
@@ -14,16 +16,38 @@ const navItems = [
   { to: '/about', label: 'About' },
   { to: '/courses', label: 'Courses' },
   { to: '/teachers', label: 'Teachers' },
-  { to: '/quizzes', label: 'Downloads' },
+  { to: '/downloads', label: 'App & Downloads' },
 ]
-
-
 
 const Navbar = ({ onLogin, onSignup }: NavbarProps) => {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const [showProfile, setShowProfile] = useState(false)
+  const [isDark, setIsDark] = useState(false)
+  const { scrollYProgress } = useScroll()
+
+  // Initialize theme
+  useEffect(() => {
+    const isDarkMode = localStorage.getItem('theme') === 'dark' || 
+      (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    
+    setIsDark(isDarkMode)
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark')
+    }
+  }, [])
+
+  const toggleTheme = () => {
+    setIsDark(!isDark)
+    if (!isDark) {
+      document.documentElement.classList.add('dark')
+      localStorage.setItem('theme', 'dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+      localStorage.setItem('theme', 'light')
+    }
+  }
 
   const handleLogout = () => {
     logout()
@@ -31,115 +55,137 @@ const Navbar = ({ onLogin, onSignup }: NavbarProps) => {
     setOpen(false)
   }
 
+  const handleNavLogin = () => navigate('/auth')
+  const handleNavSignup = () => navigate('/auth?mode=register')
+
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b border-white/50 glass">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link to="/" className="flex items-center gap-2.5 transition-opacity hover:opacity-80">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand-600 to-brand-700 text-white shadow-lg shadow-brand-500/20">
-              <span className="text-xl font-bold">Ed</span>
-            </div>
-            <div className="leading-none">
-              <div className="text-lg font-bold text-slate-900 tracking-tight">Scholarly</div>
-              <div className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Learning Platform</div>
+      <header className="fixed top-0 left-0 right-0 z-50 w-full glass transition-colors duration-300 border-b-0">
+        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+          <Link to="/" className="flex items-center gap-3 transition-all group">
+            <img src="/favicon.png" alt="Scholarly Logo" className="h-12 w-12 rounded-2xl shadow-glow group-hover:shadow-glow-hover group-hover:scale-105 transition-all duration-300 object-cover" />
+            <div className="leading-none hidden sm:block">
+              <div className="text-xl font-black font-display text-slate-900 dark:text-white tracking-tight group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-brand-600 group-hover:to-electric-blue transition-all duration-300">Scholarly</div>
+              <div className="text-[11px] uppercase tracking-widest text-brand-500 dark:text-brand-400 font-bold mt-0.5">Platform</div>
             </div>
           </Link>
 
-          <nav className="hidden items-center gap-1 md:flex">
+          <nav className="hidden lg:flex items-center gap-2 bg-slate-100/50 dark:bg-slate-900/50 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-800/50 backdrop-blur-md shadow-inner">
             {navItems.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
                 className={({ isActive }) =>
-                  `px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${isActive
-                    ? 'bg-brand-50 text-brand-700'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                  `relative px-5 py-2.5 text-sm font-semibold rounded-full transition-all duration-300 ${isActive
+                    ? 'text-white shadow-sm'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-800/50'
                   }`
                 }
               >
-                {item.label}
+                {({ isActive }) => (
+                  <>
+                    <span className="relative z-10">{item.label}</span>
+                    {isActive && (
+                      <motion.div
+                        layoutId="nav-pill"
+                        className="absolute inset-0 bg-gradient-to-r from-brand-600 to-brand-500 dark:from-brand-500 dark:to-electric-blue rounded-full"
+                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                      />
+                    )}
+                  </>
+                )}
               </NavLink>
             ))}
           </nav>
 
-          <div className="hidden items-center gap-3 md:flex">
-            {user ? (
-              <>
-                <div className="flex items-center gap-3 pl-2 border-l border-slate-200">
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={toggleTheme} 
+              className="relative p-2.5 rounded-full bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:text-brand-600 dark:hover:text-electric-blue transition-colors overflow-hidden group border border-slate-200/50 dark:border-slate-800/50 shadow-sm"
+              aria-label="Toggle Dark Mode"
+            >
+              <div className="absolute inset-0 bg-brand-500/10 scale-0 group-hover:scale-100 transition-transform duration-300 rounded-full" />
+              {isDark ? <SunIcon className="w-5 h-5 relative z-10" /> : <MoonIcon className="w-5 h-5 relative z-10" />}
+            </button>
+
+            <div className="hidden md:flex items-center gap-3 pl-4 border-l border-slate-200 dark:border-slate-800">
+              {user ? (
+                <>
                   {user.role === 'student' && (
-                    <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard/student')}>
+                    <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard/student')} className="dark:text-slate-300 dark:hover:text-white font-semibold">
                       Dashboard
                     </Button>
                   )}
                   {user.role === 'teacher' && (
-                    <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard/teacher')}>
+                    <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard/teacher')} className="dark:text-slate-300 dark:hover:text-white font-semibold">
                       Dashboard
                     </Button>
                   )}
                   {user.role === 'admin' && (
-                    <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard/admin')}>
+                    <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard/admin')} className="dark:text-slate-300 dark:hover:text-white font-semibold">
                       Admin
                     </Button>
                   )}
 
                   <button
                     onClick={() => setShowProfile(true)}
-                    className="group relative flex items-center gap-2 rounded-full pl-1 pr-3 py-1 hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200"
+                    className="group relative flex items-center gap-2 rounded-full p-1 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-transparent"
                   >
-                    <div className="relative h-8 w-8 overflow-hidden rounded-full ring-2 ring-white shadow-sm group-hover:ring-brand-100 transition-all">
+                    <div className="relative h-10 w-10 overflow-hidden rounded-full ring-2 ring-white dark:ring-slate-900 shadow-md group-hover:ring-electric-blue dark:group-hover:ring-electric-blue transition-all">
                       {user.avatar ? (
                         <img src={user.avatar} alt={user.name} className="h-full w-full object-cover" />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-brand-100 font-bold text-brand-600 text-xs">
+                        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-brand-500 to-purple-500 font-bold text-white text-sm">
                           {user.name.charAt(0).toUpperCase()}
                         </div>
                       )}
                     </div>
-                    <div className="text-left hidden lg:block">
-                      <div className="text-xs font-semibold text-slate-700 group-hover:text-brand-700">{user.name}</div>
-                    </div>
                   </button>
 
-                  <Button variant="ghost" size="sm" onClick={handleLogout} className="text-slate-400 hover:text-red-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-                      <path fillRule="evenodd" d="M3 4.25A2.25 2.25 0 015.25 2h5.5A2.25 2.25 0 0113 4.25v2a.75.75 0 01-1.5 0v-2a.75.75 0 00-.75-.75h-5.5a.75.75 0 00-.75.75v11.5c0 .414.336.75.75.75h5.5a.75.75 0 00.75-.75v-2a.75.75 0 011.5 0v2A2.25 2.25 0 0110.75 18h-5.5A2.25 2.25 0 013 15.75V4.25z" clipRule="evenodd" />
-                      <path fillRule="evenodd" d="M19 10a.75.75 0 00-.75-.75H8.704l1.048-.943a.75.75 0 10-1.004-1.114l-2.5 2.25a.75.75 0 000 1.114l2.5 2.25a.75.75 0 101.004-1.114l-1.048-.943h9.546A.75.75 0 0019 10z" clipRule="evenodd" />
-                    </svg>
+                  <Button variant="ghost" size="sm" onClick={handleLogout} className="text-slate-400 hover:text-red-600 dark:hover:text-red-400 px-2 font-semibold">
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <Button variant="ghost" onClick={handleNavLogin} className="hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800 font-semibold">
+                    Log in
+                  </Button>
+                  <Button onClick={handleNavSignup} className="shadow-glow hover:shadow-glow-hover bg-gradient-to-r from-brand-600 to-electric-blue border-none text-white font-bold rounded-full px-6 transition-all hover:scale-105">
+                    Sign Up Free
                   </Button>
                 </div>
-              </>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" onClick={() => onLogin('student')}>
-                  Log in
-                </Button>
-                <Button onClick={() => onSignup('student')} className="shadow-brand-500/20 shadow-lg">Get Started</Button>
-              </div>
-            )}
+              )}
+            </div>
+
+            <button
+              className="rounded-xl p-2.5 bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 text-slate-600 dark:text-slate-300 transition hover:text-brand-600 lg:hidden"
+              onClick={() => setOpen((v) => !v)}
+              aria-label="Toggle navigation"
+            >
+              {open ? <XMarkIcon className="w-6 h-6" /> : <Bars3Icon className="w-6 h-6" />}
+            </button>
           </div>
-
-          <button
-            className="rounded-lg p-2 text-slate-600 transition hover:bg-slate-100 md:hidden"
-            onClick={() => setOpen((v) => !v)}
-            aria-label="Toggle navigation"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-            </svg>
-          </button>
         </div>
+        
+        {/* Scroll Progress Bar */}
+        <motion.div 
+          className="h-[2px] bg-gradient-to-r from-brand-500 via-electric-blue to-purple-500 origin-left"
+          style={{ scaleX: scrollYProgress }}
+        />
 
+        {/* Mobile menu */}
         {open && (
-          <div className="border-t border-slate-100 bg-white/95 backdrop-blur px-4 pb-6 pt-2 md:hidden animate-slide-up shadow-lg">
+          <div className="absolute top-full left-0 right-0 border-t border-slate-100 dark:border-slate-800 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl px-4 pb-8 pt-4 lg:hidden shadow-2xl">
             <nav className="flex flex-col gap-2">
               {navItems.map((item) => (
                 <NavLink
                   key={item.to}
                   to={item.to}
                   className={({ isActive }) =>
-                    `block px-4 py-3 text-base font-medium rounded-xl transition-colors ${isActive
-                      ? 'bg-brand-50 text-brand-700'
-                      : 'text-slate-600 hover:bg-slate-50'
+                    `block px-5 py-4 text-lg font-bold rounded-2xl transition-all ${isActive
+                      ? 'bg-gradient-to-r from-brand-50 to-electric-blue/10 dark:from-brand-900/20 dark:to-electric-blue/10 text-brand-700 dark:text-electric-blue'
+                      : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900'
                     }`
                   }
                   onClick={() => setOpen(false)}
@@ -148,37 +194,37 @@ const Navbar = ({ onLogin, onSignup }: NavbarProps) => {
                 </NavLink>
               ))}
             </nav>
-            <div className="mt-6 flex flex-col gap-3 pt-6 border-t border-slate-100">
+            <div className="mt-8 flex flex-col gap-4 pt-8 border-t border-slate-100 dark:border-slate-800">
               {user ? (
                 <>
-                  <div className="flex items-center gap-3 px-2 mb-2">
-                    <div className="h-10 w-10 overflow-hidden rounded-full border border-slate-200">
+                  <div className="flex items-center gap-4 px-2 mb-4">
+                    <div className="h-14 w-14 overflow-hidden rounded-full border-2 border-brand-500 shadow-glow">
                       {user.avatar ? (
                         <img src={user.avatar} alt={user.name} className="h-full w-full object-cover" />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-brand-100 font-bold text-brand-600">
+                        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-brand-500 to-purple-500 font-bold text-white text-xl">
                           {user.name.charAt(0).toUpperCase()}
                         </div>
                       )}
                     </div>
                     <div>
-                      <div className="font-semibold text-slate-900">{user.name}</div>
-                      <div className="text-xs text-slate-500 capitalize">{user.role}</div>
+                      <div className="font-bold text-xl text-slate-900 dark:text-white">{user.name}</div>
+                      <div className="text-sm text-brand-600 dark:text-brand-400 font-semibold capitalize tracking-wide">{user.role}</div>
                     </div>
                   </div>
-                  <Button variant="secondary" onClick={() => { setShowProfile(true); setOpen(false); }}>
+                  <Button variant="secondary" className="h-12 rounded-xl text-base" onClick={() => { setShowProfile(true); setOpen(false); }}>
                     Edit Profile
                   </Button>
-                  <Button variant="ghost" className="justify-start text-red-600 hover:bg-red-50 hover:text-red-700" onClick={handleLogout}>
+                  <Button variant="ghost" className="h-12 rounded-xl text-base justify-center text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/10 dark:hover:bg-red-900/20 dark:text-red-400" onClick={handleLogout}>
                     Sign Out
                   </Button>
                 </>
               ) : (
                 <div className="flex flex-col gap-3">
-                  <Button variant="secondary" onClick={() => onLogin('student')} className="w-full justify-center">
+                  <Button variant="secondary" onClick={() => { handleNavLogin(); setOpen(false); }} className="h-14 rounded-xl text-lg font-bold w-full justify-center">
                     Log in
                   </Button>
-                  <Button onClick={() => onSignup('student')} className="w-full justify-center">
+                  <Button onClick={() => { handleNavSignup(); setOpen(false); }} className="h-14 rounded-xl text-lg font-bold w-full justify-center bg-gradient-to-r from-brand-600 to-electric-blue border-none shadow-glow text-white">
                     Create Account
                   </Button>
                 </div>
@@ -193,3 +239,4 @@ const Navbar = ({ onLogin, onSignup }: NavbarProps) => {
 }
 
 export default Navbar
+

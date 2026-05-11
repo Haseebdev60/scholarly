@@ -1,11 +1,15 @@
-import { useEffect, useState } from 'react'
-import { ArrowRightIcon, PlayCircleIcon, AcademicCapIcon, BoltIcon, CheckBadgeIcon, UserGroupIcon } from '@heroicons/react/24/outline'
+import { useEffect, useState, useRef } from 'react'
+import { ArrowRightIcon, PlayCircleIcon, AcademicCapIcon, BoltIcon, CheckBadgeIcon, UserGroupIcon, StarIcon } from '@heroicons/react/24/outline'
+import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
 import { Link } from 'react-router-dom'
+import { motion, useScroll, useTransform } from 'framer-motion'
 import Badge from '../components/Badge'
 import Button from '../components/Button'
-import Card from '../components/Card'
+import { BentoGrid, BentoGridItem } from '../components/BentoGrid'
+import { GlassCard } from '../components/GlassCard'
 import { features, testimonials } from '../data'
 import { publicApi } from '../lib/api'
+import { fadeUp, staggerContainer, scaleIn } from '../lib/utils'
 
 type HomeProps = {
   onOpenAuth: (mode: 'login' | 'register', role?: 'student' | 'teacher') => void
@@ -14,6 +18,15 @@ type HomeProps = {
 
 const Home = ({ onOpenAuth, onMessage }: HomeProps) => {
   const [highlightTeachers, setHighlightTeachers] = useState<any[]>([])
+  const targetRef = useRef<HTMLDivElement>(null)
+  const { scrollYProgress } = useScroll({
+    target: targetRef,
+    offset: ["start start", "end start"],
+  })
+
+  const opacity = useTransform(scrollYProgress, [0, 1], [1, 0])
+  const scale = useTransform(scrollYProgress, [0, 1], [1, 0.8])
+  const y = useTransform(scrollYProgress, [0, 1], [0, 200])
 
   useEffect(() => {
     publicApi.getTeachers()
@@ -21,262 +34,273 @@ const Home = ({ onOpenAuth, onMessage }: HomeProps) => {
       .catch(console.error)
   }, [])
 
-  /* Hero Video Logic */
-  const [heroVideo, setHeroVideo] = useState<{ url: string; type: string; thumbnail?: string } | null>(null)
-
-  useEffect(() => {
-    // Fetch hero video if available
-    import('../lib/api').then(({ publicApi }) => {
-      publicApi.getResources('video').then(resources => {
-        const hero = resources.find(r => (r as any).isHero)
-        if (hero) setHeroVideo(hero)
-      }).catch(err => console.error(err))
-    })
-  }, [])
-
   return (
-    <div className="overflow-x-hidden">
-      {/* Hero Section */}
-      <section className="relative pt-20 pb-32 lg:pt-32 lg:pb-40 overflow-hidden">
-        {/* Animated Background Elements */}
-        <div className="absolute inset-0 -z-10">
-          <div className="absolute top-0 right-0 -mr-20 -mt-20 h-[600px] w-[600px] rounded-full bg-brand-100/50 blur-3xl animate-pulse" />
-          <div className="absolute bottom-0 left-0 -ml-20 -mb-20 h-[500px] w-[500px] rounded-full bg-blue-100/40 blur-3xl" />
-          <div className="absolute top-1/3 left-1/4 h-64 w-64 rounded-full bg-purple-100/30 blur-2xl animate-bounce duration-[10s]" />
+    <div className="overflow-hidden bg-white dark:bg-slate-950 transition-colors duration-300">
+      {/* Premium Hero Section */}
+      <section ref={targetRef} className="relative min-h-screen flex flex-col justify-center pt-32 pb-40 lg:pt-48 lg:pb-48 overflow-hidden">
+        {/* Animated Gradient Background */}
+        <div className="absolute inset-0 z-0 bg-slate-950">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-brand-900/40 via-slate-950 to-slate-950" />
+          <motion.div 
+            animate={{ 
+              scale: [1, 1.2, 1],
+              opacity: [0.3, 0.5, 0.3],
+              rotate: [0, 90, 0]
+            }}
+            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+            className="absolute -top-[20%] -right-[10%] w-[70vw] h-[70vw] rounded-full bg-brand-600/20 blur-[120px] mix-blend-screen"
+          />
+          <motion.div 
+            animate={{ 
+              scale: [1, 1.5, 1],
+              opacity: [0.2, 0.4, 0.2],
+              rotate: [0, -90, 0]
+            }}
+            transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+            className="absolute -bottom-[20%] -left-[10%] w-[60vw] h-[60vw] rounded-full bg-electric-blue/20 blur-[120px] mix-blend-screen"
+          />
+          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay pointer-events-none" />
         </div>
 
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative">
-          <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
-            <div className="flex-1 space-y-8 text-center lg:text-left animate-fade-in">
-              <Badge className="bg-white/80 backdrop-blur border border-brand-100 shadow-sm">
-                <span className="flex items-center gap-1">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-500"></span>
+        <motion.div style={{ opacity, scale, y }} className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10 w-full">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            
+            {/* Hero Content */}
+            <motion.div 
+              initial="initial" animate="animate" variants={staggerContainer}
+              className="text-left space-y-8"
+            >
+              <motion.div variants={fadeUp}>
+                <Badge className="bg-white/10 text-brand-300 border-white/20 shadow-glow backdrop-blur-md inline-flex py-1.5 px-4 rounded-full font-medium">
+                  <span className="flex items-center gap-2">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-electric-blue"></span>
+                    </span>
+                    Scholarly 2.0 is live
                   </span>
-                  New: Student & Teacher Dashboards 2.0
-                </span>
-              </Badge>
+                </Badge>
+              </motion.div>
 
-              <h1 className="text-5xl lg:text-7xl font-bold tracking-tight text-slate-900 text-balance">
-                Master your <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-purple-600">exams</span> with confidence.
-              </h1>
+              <motion.h1 variants={fadeUp} className="text-6xl md:text-7xl lg:text-8xl font-black font-display tracking-tighter text-white leading-[1.05] text-balance">
+                Learn <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 via-electric-blue to-purple-glow animate-pulse-slow">Smarter</span> With AI.
+              </motion.h1>
 
-              <p className="text-xl text-slate-600 max-w-2xl mx-auto lg:mx-0 leading-relaxed text-balance">
-                Scholarly brings past papers, recorded lectures, quizzes, and live classes
-                into one premium workspace. Built for ambitious students and expert teachers.
-              </p>
+              <motion.p variants={fadeUp} className="text-lg md:text-xl text-slate-300 max-w-xl leading-relaxed text-balance font-medium">
+                An AI-powered modern learning platform designed to help students study faster, smarter, and more effectively.
+              </motion.p>
 
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-4">
-                <Button size="lg" onClick={() => onOpenAuth('register', 'student')} className="shadow-xl shadow-brand-500/20 hover:shadow-brand-500/30 transition-all transform hover:-translate-y-1">
+              <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 pt-4">
+                <Button size="lg" onClick={() => onOpenAuth('register', 'student')} className="h-14 px-8 text-lg font-bold shadow-glow hover:shadow-glow-hover bg-gradient-to-r from-brand-600 to-electric-blue text-white border-none transition-all hover:scale-105 rounded-2xl">
                   Start Learning Free
                 </Button>
                 <Link to="/courses">
-                  <Button variant="outline" size="lg" className="bg-white/50 backdrop-blur hover:bg-white group">
+                  <Button variant="outline" size="lg" className="h-14 px-8 text-lg font-bold bg-white/5 backdrop-blur-md border-white/20 text-white hover:bg-white/10 transition-all hover:scale-105 rounded-2xl group">
                     Explore Courses <ArrowRightIcon className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
-              </div>
-
-              <div className="pt-8 flex items-center justify-center lg:justify-start gap-8 text-slate-500 text-sm font-medium">
-                <div className="flex items-center gap-2">
-                  <CheckBadgeIcon className="h-5 w-5 text-brand-600" />
-                  <span>Verified Teachers</span>
+              </motion.div>
+              
+              <motion.div variants={fadeUp} className="pt-8 flex items-center gap-6">
+                <div className="flex -space-x-4">
+                  {[...Array(4)].map((_, i) => (
+                    <img key={i} src={`https://i.pravatar.cc/100?img=${i+10}`} className="w-12 h-12 rounded-full border-2 border-slate-900 object-cover" alt="Student" />
+                  ))}
+                  <div className="w-12 h-12 rounded-full border-2 border-slate-900 bg-brand-600 flex items-center justify-center text-white font-bold text-xs">+10k</div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <BoltIcon className="h-5 w-5 text-brand-600" />
-                  <span>Instant Access</span>
+                <div className="text-sm font-medium text-slate-300">
+                  <div className="flex text-amber-400 mb-1">
+                    {[...Array(5)].map((_, i) => <StarIconSolid key={i} className="h-4 w-4" />)}
+                  </div>
+                  Loved by students globally
                 </div>
-              </div>
-            </div>
-
+              </motion.div>
+            </motion.div>
+            
             {/* Hero Visual */}
-            <div className="flex-1 w-full max-w-xl lg:max-w-none relative animate-slide-up delay-100">
-              <div className="relative rounded-3xl bg-white/40 backdrop-blur-xl p-4 border border-white/50 shadow-2xl overflow-hidden glass">
-                <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-white/20 to-transparent pointer-events-none" />
-
-
-                {/* Mockup Content */}
-                <div className="rounded-2xl bg-white shadow-inner overflow-hidden relative">
-                  <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-                    <div className="flex gap-2">
-                      <div className="w-3 h-3 rounded-full bg-red-400" />
-                      <div className="w-3 h-3 rounded-full bg-amber-400" />
-                      <div className="w-3 h-3 rounded-full bg-green-400" />
+            <motion.div initial="initial" animate="animate" variants={scaleIn} className="relative hidden lg:block">
+              <div className="absolute inset-0 bg-gradient-to-tr from-brand-600/30 to-electric-blue/30 blur-3xl rounded-full" />
+              <div className="relative rotate-2 hover:rotate-0 transition-transform duration-700 group">
+                <GlassCard glowHover className="relative rounded-[2.5rem] border-white/10 bg-white/5 shadow-2xl p-2">
+                   <img 
+                      src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80" 
+                      alt="Dashboard Preview" 
+                      className="rounded-[2rem] object-cover w-full h-[600px] opacity-90 grayscale-[0.2] group-hover:grayscale-0 transition-all duration-500"
+                   />
+                </GlassCard>
+                 
+                 {/* Floating Badges */}
+                 <motion.div 
+                    animate={{ y: [0, -20, 0] }} 
+                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                    className="absolute -left-12 top-20 bg-slate-900/80 backdrop-blur-xl border border-white/40 py-4 px-6 pr-8 min-w-max rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center gap-4 pointer-events-none"
+                 >
+                    <div className="bg-brand-500/20 p-3 rounded-xl text-brand-400"><AcademicCapIcon className="w-6 h-6" /></div>
+                    <div>
+                      <div className="text-xs text-slate-400 font-bold uppercase">Course Completed</div>
+                      <div className="text-white font-bold text-lg">Advanced Math</div>
                     </div>
-                    <div className="h-2 w-20 rounded-full bg-slate-100" />
-                  </div>
-                  <div className="p-0">
-                    <div className="relative aspect-video bg-slate-900 flex items-center justify-center group cursor-pointer overflow-hidden">
-                      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 to-slate-800" />
-                      <img
-                        src="https://images.unsplash.com/photo-1593697821252-0c9137d9fc45?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
-                        alt="Lecture"
-                        className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:scale-105 transition-transform duration-700"
-                      />
-                      <div className="h-20 w-20 rounded-full bg-white/20 backdrop-blur flex items-center justify-center text-white group-hover:scale-110 transition-all z-10 border border-white/30 pl-1 shadow-2xl">
-                        <PlayCircleIcon className="h-10 w-10" />
-                      </div>
+                 </motion.div>
 
-                      {/* Player Controls Mockup */}
-                      <div className="absolute bottom-4 left-4 right-4 bg-white/10 backdrop-blur rounded-lg p-3 border border-white/10 flex items-center gap-3">
-                        <div className="h-2 w-full bg-white/20 rounded-full overflow-hidden">
-                          <div className="h-full w-1/3 bg-brand-500" />
-                        </div>
-                        <span className="text-xs text-white font-mono">04:20</span>
-                      </div>
+                 <motion.div 
+                    animate={{ y: [0, 20, 0] }} 
+                    transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                    className="absolute -right-8 bottom-32 bg-slate-900/80 backdrop-blur-xl border border-white/40 py-4 px-6 pr-8 min-w-max rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center gap-4 pointer-events-none"
+                 >
+                    <div className="bg-electric-blue/20 p-3 rounded-xl text-electric-blue"><BoltIcon className="w-6 h-6" /></div>
+                    <div>
+                      <div className="text-xs text-slate-400 font-bold uppercase">Study Streak</div>
+                      <div className="text-white font-bold text-lg">14 Days Fire 🔥</div>
                     </div>
-                    <div className="p-6 space-y-4">
-                      <div className="flex gap-4">
-                        <div className="h-12 w-12 rounded-full bg-slate-100 flex-shrink-0" />
-                        <div className="space-y-2 w-full">
-                          <div className="h-4 w-3/4 bg-slate-100 rounded" />
-                          <div className="h-3 w-1/2 bg-slate-50 rounded" />
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="h-20 rounded-xl bg-slate-50 border border-slate-100" />
-                        <div className="h-20 rounded-xl bg-slate-50 border border-slate-100" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                 </motion.div>
               </div>
-            </div>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-24 bg-white relative">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-base font-semibold text-brand-600 uppercase tracking-wide">Why Scholarly</h2>
-            <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-              Everything you need to excel, <br /> all in one place.
+      {/* Premium Features Bento Grid */}
+      <section className="py-32 bg-slate-50 dark:bg-slate-950 relative border-t border-slate-200 dark:border-white/5">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <motion.div initial="initial" whileInView="animate" viewport={{ once: true, margin: "-100px" }} variants={fadeUp} className="text-center max-w-3xl mx-auto mb-20">
+            <h2 className="text-brand-600 dark:text-brand-400 font-bold tracking-widest uppercase text-sm mb-4 font-display">Why Scholarly</h2>
+            <p className="text-4xl md:text-5xl lg:text-6xl font-black font-display tracking-tight text-slate-900 dark:text-white text-balance">
+              Everything you need to <span className="text-gradient">excel.</span>
             </p>
-          </div>
+          </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature, idx) => (
-              <Link to={feature.link} key={feature.title} className="block">
-                <Card className="group hover:-translate-y-2 transition-all duration-300 border-none shadow-card hover:shadow-card-hover bg-slate-50/50 h-full cursor-pointer">
-                  <div className="h-12 w-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-brand-600 mb-6 group-hover:scale-110 transition-transform">
-                    {idx === 0 && <AcademicCapIcon className="h-6 w-6" />}
-                    {idx === 1 && <PlayCircleIcon className="h-6 w-6" />}
-                    {idx === 2 && <UserGroupIcon className="h-6 w-6" />}
-                    {idx === 3 && <BoltIcon className="h-6 w-6" />}
-                    {idx === 4 && <AcademicCapIcon className="h-6 w-6" />}
+          <BentoGrid className="max-w-6xl mx-auto">
+            {features.map((feature, i) => (
+              <BentoGridItem
+                key={i}
+                title={feature.title}
+                description={feature.description}
+                header={
+                  <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-xl bg-gradient-to-br from-neutral-200 dark:from-neutral-900 dark:to-neutral-800 to-neutral-100 items-center justify-center relative overflow-hidden group-hover/bento:scale-[1.02] transition-transform duration-500">
+                    {i === 0 && <AcademicCapIcon className="h-16 w-16 text-brand-500/50" />}
+                    {i === 1 && <PlayCircleIcon className="h-16 w-16 text-electric-blue/50" />}
+                    {i === 2 && <UserGroupIcon className="h-16 w-16 text-purple-500/50" />}
+                    {i === 3 && <BoltIcon className="h-16 w-16 text-amber-500/50" />}
+                    {i >= 4 && <StarIcon className="h-16 w-16 text-emerald-500/50" />}
                   </div>
-                  <h3 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-brand-600 transition-colors">{feature.title}</h3>
-                  <p className="text-slate-600 leading-relaxed text-sm">
-                    {feature.description}
-                  </p>
-                </Card>
-              </Link>
+                }
+                icon={
+                   <div className="h-10 w-10 rounded-xl bg-slate-100 dark:bg-white/10 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-4 border border-slate-200 dark:border-white/10 group-hover/bento:bg-brand-500 group-hover/bento:text-white transition-colors duration-300">
+                     {i === 0 && <AcademicCapIcon className="h-5 w-5" />}
+                     {i === 1 && <PlayCircleIcon className="h-5 w-5" />}
+                     {i === 2 && <UserGroupIcon className="h-5 w-5" />}
+                     {i === 3 && <BoltIcon className="h-5 w-5" />}
+                     {i >= 4 && <StarIcon className="h-5 w-5" />}
+                   </div>
+                }
+                className={i === 0 || i === 3 ? "md:col-span-2" : ""}
+              />
             ))}
-          </div>
+          </BentoGrid>
         </div>
       </section>
 
       {/* Teachers Section */}
-      <section className="py-24 bg-slate-50 relative overflow-hidden">
-        <div className="absolute top-0 left-1/2 -ml-[600px] w-[1200px] h-full bg-white/40 skew-x-12 -z-10" />
-
+      <section className="py-32 bg-white dark:bg-slate-900 relative">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
-            <div>
-              <h2 className="text-3xl font-bold text-slate-900">Learn from the experts</h2>
-              <p className="mt-4 text-lg text-slate-600 max-w-2xl">
-                Our teachers are vetted specialists dedicated to your success. Connect with them directly.
+          <motion.div initial="initial" whileInView="animate" viewport={{ once: true, margin: "-100px" }} variants={fadeUp} className="flex flex-col md:flex-row items-end justify-between mb-16 gap-6">
+            <div className="max-w-2xl">
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-black font-display text-slate-900 dark:text-white tracking-tight">Learn from <span className="text-gradient">experts.</span></h2>
+              <p className="mt-6 text-lg text-slate-600 dark:text-slate-400 font-medium">
+                Connect directly with vetted specialists dedicated to your academic success.
               </p>
             </div>
-            <Link to="/teachers" className="text-brand-700 font-semibold flex items-center gap-2 hover:gap-3 transition-all">
-              View all teachers <ArrowRightIcon className="h-5 w-5" />
+            <Link to="/teachers">
+              <Button variant="outline" className="hidden md:flex items-center gap-2 rounded-xl h-12 px-6 border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 font-bold group">
+                Meet all teachers <ArrowRightIcon className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              </Button>
             </Link>
-          </div>
+          </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <motion.div initial="initial" whileInView="animate" viewport={{ once: true, margin: "-100px" }} variants={staggerContainer} className="grid md:grid-cols-3 gap-8">
             {highlightTeachers.map((teacher) => (
-              <div key={teacher._id} className="bg-white rounded-2xl p-6 shadow-card hover:shadow-card-hover transition-all group border border-slate-100">
-                <div className="flex justify-between items-start mb-6">
-                  <div className="relative">
-                    <div className="h-16 w-16 rounded-full overflow-hidden ring-4 ring-slate-50 group-hover:ring-brand-50 transition-all">
-                      <img
-                        src={teacher.avatar || 'https://ui-avatars.com/api/?name=' + teacher.name}
-                        alt={teacher.name}
-                        className="h-full w-full object-cover"
-                      />
+              <motion.div key={teacher._id} variants={fadeUp}>
+                <GlassCard glowHover className="h-full bg-slate-50 dark:bg-slate-950 rounded-[2rem] p-8 border border-slate-200 dark:border-white/5">
+                  <div className="flex justify-between items-start mb-8">
+                    <div className="relative">
+                      <div className="h-24 w-24 rounded-2xl overflow-hidden shadow-lg group-hover:shadow-brand-500/30 transition-all duration-500 group-hover:rotate-3">
+                        <img
+                          src={teacher.avatar || 'https://ui-avatars.com/api/?name=' + teacher.name}
+                          alt={teacher.name}
+                          className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        />
+                      </div>
+                      <div className="absolute -bottom-2 -right-2 h-8 w-8 bg-brand-500 rounded-xl flex items-center justify-center shadow-lg transform rotate-12 group-hover:rotate-0 transition-transform">
+                        <CheckBadgeIcon className="h-5 w-5 text-white" />
+                      </div>
                     </div>
-                    <div className="absolute -bottom-1 -right-1 h-6 w-6 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
-                      <CheckBadgeIcon className="h-4 w-4 text-white" />
-                    </div>
+                    <Button size="sm" variant="secondary" className="rounded-xl font-bold bg-slate-200 dark:bg-white/10 dark:text-white" onClick={() => onMessage(teacher._id, teacher.name)}>
+                      Message
+                    </Button>
                   </div>
-                  <Button size="sm" variant="ghost" onClick={() => onMessage(teacher._id, teacher.name)}>
-                    Message
-                  </Button>
-                </div>
 
-                <h3 className="text-xl font-bold text-slate-900">{teacher.name}</h3>
-                <div className="text-sm text-brand-600 font-medium mb-4">Senior Lecturer</div>
+                  <h3 className="text-2xl font-black font-display text-slate-900 dark:text-white mb-1">{teacher.name}</h3>
+                  <div className="text-sm text-brand-600 dark:text-electric-blue font-bold tracking-wide uppercase mb-4">Senior Lecturer</div>
 
-                <p className="text-slate-600 text-sm mb-6 line-clamp-2">
-                  {teacher.bio || 'Experienced educator passionate about helping students achieve their academic goals.'}
-                </p>
-
-                <div className="flex flex-wrap gap-2">
-                  {teacher.assignedSubjects?.map((subject: any) => (
-                    <span key={subject._id} className="px-3 py-1 rounded-full bg-slate-50 text-xs font-semibold text-slate-600 border border-slate-200">
-                      {subject.title}
-                    </span>
-                  ))}
-                </div>
-              </div>
+                  <p className="text-slate-600 dark:text-slate-400 text-sm mb-8 line-clamp-3 leading-relaxed font-medium">
+                    {teacher.bio || 'Experienced educator passionate about helping students achieve their academic goals and beyond.'}
+                  </p>
+                  
+                  <div className="flex flex-wrap gap-2 mt-auto">
+                    {teacher.assignedSubjects?.slice(0,2).map((subject: any) => (
+                       <span key={subject._id} className="px-3 py-1.5 rounded-lg bg-white dark:bg-white/5 shadow-sm text-xs font-bold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10">
+                          {subject.title}
+                       </span>
+                    ))}
+                    {teacher.assignedSubjects?.length > 2 && (
+                      <span className="px-3 py-1.5 rounded-lg bg-white dark:bg-white/5 shadow-sm text-xs font-bold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10">
+                        +{teacher.assignedSubjects.length - 2} more
+                      </span>
+                    )}
+                  </div>
+                </GlassCard>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="py-24 bg-slate-900 text-white relative overflow-hidden">
-        <div className="absolute top-0 right-0 -mt-20 -mr-20 h-96 w-96 rounded-full bg-brand-600/20 blur-3xl" />
-        <div className="absolute bottom-0 left-0 -mb-20 -ml-20 h-96 w-96 rounded-full bg-purple-600/20 blur-3xl" />
+      {/* Testimonials Marquee */}
+      <section className="py-32 bg-slate-950 text-white relative overflow-hidden border-t border-white/5">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-brand-900/20 via-slate-950 to-slate-950" />
+        
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10 mb-16 text-center">
+          <motion.h2 initial="initial" whileInView="animate" viewport={{ once: true }} variants={fadeUp} className="text-4xl md:text-5xl lg:text-6xl font-black font-display mb-6 tracking-tight text-white">
+            Loved by <span className="text-gradient">thousands.</span>
+          </motion.h2>
+        </div>
 
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div>
-              <Badge className="bg-white/10 text-white border-white/20 mb-6">Testimonials</Badge>
-              <h2 className="text-3xl md:text-5xl font-bold mb-6">Join thousands of happy learners.</h2>
-              <p className="text-slate-400 text-lg mb-8">
-                From high school students to lifelong learners, Scholarly is changing the way people prepare for their future.
-              </p>
-              <Button size="lg" className="bg-white !text-slate-900 hover:bg-slate-100 border-none font-bold" onClick={() => onOpenAuth('register', 'student')}>
-                Join the Community
-              </Button>
-            </div>
-
-            <div className="grid gap-6">
-              {testimonials.map((testimonial, idx) => (
-                <div key={testimonial.name} className={`bg-white/5 backdrop-blur-md p-6 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors ${idx === 1 ? 'lg:ml-12' : ''}`}>
-                  <div className="flex gap-1 text-amber-400 mb-3">
-                    {[...Array(5)].map((_, i) => (
-                      <svg key={i} className="h-4 w-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
-                    ))}
-                  </div>
-                  <p className="text-lg font-medium leading-relaxed mb-4">"{testimonial.quote}"</p>
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-brand-400 to-purple-500 flex items-center justify-center font-bold text-white text-sm">
-                      {testimonial.name[0]}
+        <div className="relative w-full overflow-hidden flex flex-col gap-6">
+           <div className="flex w-fit animate-marquee gap-6 hover:[animation-play-state:paused] pr-6">
+              {[...testimonials, ...testimonials].map((testimonial, idx) => (
+                 <GlassCard key={idx} glowHover className="w-[400px] shrink-0 bg-white/5 backdrop-blur-xl p-8 rounded-[2rem] border-white/10">
+                    <div className="flex gap-1 text-amber-400 mb-6">
+                       {[...Array(5)].map((_, i) => <StarIconSolid key={i} className="h-5 w-5" />)}
                     </div>
-                    <div>
-                      <div className="font-bold">{testimonial.name}</div>
-                      <div className="text-xs text-slate-400">{testimonial.context}</div>
+                    <p className="text-lg font-medium leading-relaxed mb-8 text-slate-300">"{testimonial.quote}"</p>
+                    <div className="flex items-center gap-4 mt-auto">
+                      <div className="h-12 w-12 rounded-full bg-gradient-to-br from-brand-500 to-electric-blue flex items-center justify-center font-bold text-white text-lg shadow-glow">
+                        {testimonial.name[0]}
+                      </div>
+                      <div>
+                        <div className="font-bold text-white">{testimonial.name}</div>
+                        <div className="text-sm text-slate-400 font-medium">{testimonial.context}</div>
+                      </div>
                     </div>
-                  </div>
-                </div>
+                 </GlassCard>
               ))}
-            </div>
-          </div>
+           </div>
+        </div>
+        
+        <div className="relative z-10 mt-20 text-center">
+           <Button size="lg" className="h-14 px-8 text-lg font-bold bg-white text-slate-900 hover:bg-slate-100 hover:scale-105 transition-all shadow-glow rounded-2xl" onClick={() => onOpenAuth('register', 'student')}>
+             Start Your Journey
+           </Button>
         </div>
       </section>
     </div>

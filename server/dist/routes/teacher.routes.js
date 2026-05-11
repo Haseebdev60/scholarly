@@ -144,7 +144,6 @@ router.post('/create-resource', requireApprovedTeacher, async (req, res) => {
         url: finalUrl,
         subjectId,
         teacherId: req.user.id,
-        teacherName: teacher.name,
         year,
         size,
         format,
@@ -246,7 +245,7 @@ router.get('/messages/:userId', requireApprovedTeacher, async (req, res) => {
 // POST /api/teacher/message
 router.post('/message', requireApprovedTeacher, async (req, res) => {
     const { recipientId, content } = req.body;
-    const teacher = req.teacherDoc;
+    // const teacher = (req as any).teacherDoc
     const Message = (await Promise.resolve().then(() => __importStar(require('../models/Message')))).default;
     // Get recipient name for redundancy/display
     const recipient = await User_1.default.findById(recipientId);

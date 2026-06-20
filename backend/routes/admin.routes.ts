@@ -40,6 +40,17 @@ router.post('/approve-teacher', async (req, res) => {
 // POST assign-subject
 router.post('/assign-subject', async (req, res) => {
     const { teacherId, subjectId } = req.body
+    if (!teacherId || !subjectId)
+        return res.status(400).json({ error: 'Missing fields' })
+
+    const teacher = await User.findOne({ _id: teacherId, role: 'teacher' })
+    if (!teacher)
+        return res.status(404).json({ error: 'Teacher not found' })
+
+    const subject = await Subject.findByIdAndUpdate(subjectId, { teacherId }, { new: true })
+    if (!subject)
+        return res.status(404).json({ error: 'Subject not found' })
+
     await User.findByIdAndUpdate(teacherId, { $addToSet: { assignedSubjects: subjectId } })
     res.json({ assigned: true })
 })

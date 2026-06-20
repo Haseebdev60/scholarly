@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import Button from './Button'
 import { ArrowRightIcon } from '@heroicons/react/24/outline'
 
@@ -17,10 +16,8 @@ const legalLinks = [
 ]
 
 export const Footer = () => (
-  <footer className="relative bg-slate-950 text-slate-400 border-t border-white/5 overflow-hidden pt-24 pb-12">
-    {/* Premium Glow Background */}
-    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-brand-600/20 blur-[120px] rounded-[100%] pointer-events-none" />
-    <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-electric-blue/10 blur-[100px] rounded-full pointer-events-none" />
+  <footer className="relative bg-slate-950 text-slate-400 border-t border-white/5 overflow-hidden pt-20 pb-10">
+    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[200px] bg-brand-600/10 blur-3xl rounded-full pointer-events-none" />
 
     <div className="mx-auto max-w-7xl px-4 md:px-6 lg:px-8 relative z-10">
       <div className="grid gap-16 md:grid-cols-2 lg:grid-cols-12 mb-16">

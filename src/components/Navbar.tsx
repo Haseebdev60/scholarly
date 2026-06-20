@@ -4,7 +4,6 @@ import { useAuth } from '../contexts/AuthContext'
 import Button from './Button'
 import ProfileModal from './ProfileModal'
 import { SunIcon, MoonIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
-import { motion, useScroll } from 'framer-motion'
 
 type NavbarProps = {
   onLogin: (role: 'student' | 'teacher' | 'admin') => void
@@ -25,7 +24,6 @@ const Navbar = ({ onLogin, onSignup }: NavbarProps) => {
   const [open, setOpen] = useState(false)
   const [showProfile, setShowProfile] = useState(false)
   const [isDark, setIsDark] = useState(false)
-  const { scrollYProgress } = useScroll()
 
   // Initialize theme
   useEffect(() => {
@@ -60,7 +58,7 @@ const Navbar = ({ onLogin, onSignup }: NavbarProps) => {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 w-full glass transition-colors duration-300 border-b-0">
+      <header className="fixed top-0 left-0 right-0 z-50 w-full bg-white/90 dark:bg-slate-950/90 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-800/60">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link to="/" className="flex items-center gap-3 transition-all group">
             <img src="/favicon.png" alt="Scholarly Logo" className="h-12 w-12 rounded-2xl shadow-glow group-hover:shadow-glow-hover group-hover:scale-105 transition-all duration-300 object-cover" />
@@ -76,24 +74,13 @@ const Navbar = ({ onLogin, onSignup }: NavbarProps) => {
                 key={item.to}
                 to={item.to}
                 className={({ isActive }) =>
-                  `relative px-5 py-2.5 text-sm font-semibold rounded-full transition-all duration-300 ${isActive
-                    ? 'text-white shadow-sm'
-                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-800/50'
+                  `relative px-5 py-2.5 text-sm font-semibold rounded-full transition-colors duration-200 ${isActive
+                    ? 'bg-brand-600 text-white shadow-sm'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
                   }`
                 }
               >
-                {({ isActive }) => (
-                  <>
-                    <span className="relative z-10">{item.label}</span>
-                    {isActive && (
-                      <motion.div
-                        layoutId="nav-pill"
-                        className="absolute inset-0 bg-gradient-to-r from-brand-600 to-brand-500 dark:from-brand-500 dark:to-electric-blue rounded-full"
-                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                      />
-                    )}
-                  </>
-                )}
+                {item.label}
               </NavLink>
             ))}
           </nav>
@@ -151,8 +138,8 @@ const Navbar = ({ onLogin, onSignup }: NavbarProps) => {
                   <Button variant="ghost" onClick={handleNavLogin} className="hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800 font-semibold">
                     Log in
                   </Button>
-                  <Button onClick={handleNavSignup} className="shadow-glow hover:shadow-glow-hover bg-gradient-to-r from-brand-600 to-electric-blue border-none text-white font-bold rounded-full px-6 transition-all hover:scale-105">
-                    Sign Up Free
+                  <Button onClick={handleNavSignup} className="shadow-glow hover:shadow-glow-hover bg-gradient-to-r from-brand-600 to-brand-500 border-none text-white font-bold rounded-full px-6 transition-all hover:scale-105">
+                    Student Sign Up
                   </Button>
                 </div>
               )}
@@ -167,12 +154,6 @@ const Navbar = ({ onLogin, onSignup }: NavbarProps) => {
             </button>
           </div>
         </div>
-        
-        {/* Scroll Progress Bar */}
-        <motion.div 
-          className="h-[2px] bg-gradient-to-r from-brand-500 via-electric-blue to-purple-500 origin-left"
-          style={{ scaleX: scrollYProgress }}
-        />
 
         {/* Mobile menu */}
         {open && (
@@ -224,8 +205,8 @@ const Navbar = ({ onLogin, onSignup }: NavbarProps) => {
                   <Button variant="secondary" onClick={() => { handleNavLogin(); setOpen(false); }} className="h-14 rounded-xl text-lg font-bold w-full justify-center">
                     Log in
                   </Button>
-                  <Button onClick={() => { handleNavSignup(); setOpen(false); }} className="h-14 rounded-xl text-lg font-bold w-full justify-center bg-gradient-to-r from-brand-600 to-electric-blue border-none shadow-glow text-white">
-                    Create Account
+                  <Button onClick={() => { handleNavSignup(); setOpen(false); }} className="h-14 rounded-xl text-lg font-bold w-full justify-center bg-gradient-to-r from-brand-600 to-brand-500 border-none shadow-glow text-white">
+                    Student Sign Up
                   </Button>
                 </div>
               )}

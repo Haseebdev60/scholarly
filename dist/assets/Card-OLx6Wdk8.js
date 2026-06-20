@@ -1,0 +1,1 @@
+import{j as c}from"./motion-DRZtjPIV.js";const d=({children:r,className:s,padding:a="p-6",hover:o,onClick:e,...t})=>c.jsx("div",{className:`card-base ${a} ${o?"card-hover cursor-pointer":""} ${s}`,onClick:e,...t,children:r});export{d as C};

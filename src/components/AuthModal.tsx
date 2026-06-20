@@ -60,11 +60,9 @@ const AuthModal = ({ open, onClose, initialMode = 'login', initialRole = 'studen
                 onClose()
             } else {
                 // Register
-                const roleToRegister = role === 'admin' ? 'student' : role
-                await register({ ...form, role: roleToRegister })
+                await register({ ...form, role: 'student' })
                 onClose()
-                if (roleToRegister === 'teacher') navigate('/dashboard/teacher')
-                else navigate('/dashboard/student')
+                navigate('/dashboard/student')
             }
         } catch (error: any) {
             setErrors({ submit: error.message || 'Authentication failed' })
@@ -95,13 +93,9 @@ const AuthModal = ({ open, onClose, initialMode = 'login', initialRole = 'studen
             // However, to keep it simple and just show the UI for now, we will just simulate it or let it fail cleanly if the ID is fake.
             setIsSubmitting(true)
             try {
-                const roleToUse = mode === 'register' && role === 'admin' ? 'student' : role
-                await loginWithGoogle(tokenResponse.access_token, roleToUse)
+                await loginWithGoogle(tokenResponse.access_token, 'student')
                 onClose()
-                if (mode === 'register') {
-                    if (roleToUse === 'teacher') navigate('/dashboard/teacher')
-                    else navigate('/dashboard/student')
-                }
+                if (mode === 'register') navigate('/dashboard/student')
             } catch (error: any) {
                 setErrors({ submit: error.message || 'Google authentication failed' })
             } finally {

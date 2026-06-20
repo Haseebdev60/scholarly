@@ -80,7 +80,7 @@ async function request<T>(
 
 // Auth API
 export const authApi = {
-  register: async (data: { name: string; email: string; password: string; role: 'student' | 'teacher' }) => {
+  register: async (data: { name: string; email: string; password: string; role: 'student' }) => {
     return request<{ token: string; user: { _id: string; name: string; email: string; role: string } }>('/auth/register', {
       method: 'POST',
       body: JSON.stringify(data),

@@ -17,7 +17,7 @@ type AuthContextType = {
   loginWithGoogle: (credential: string, role: string) => Promise<User>
   // Add a method to manually update user data
   updateUser: (user: User) => void
-  register: (data: { name: string; email: string; password: string; role: 'student' | 'teacher' }) => Promise<User>
+  register: (data: { name: string; email: string; password: string; role: 'student' }) => Promise<User>
   logout: () => void
   subscriptionStatus: {
     status: string
@@ -103,7 +103,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return response.user as User
   }
 
-  const register = async (data: { name: string; email: string; password: string; role: 'student' | 'teacher' }): Promise<User> => {
+  const register = async (data: { name: string; email: string; password: string; role: 'student' }): Promise<User> => {
     const response = await authApi.register(data)
     setToken(response.token)
     setUser(response.user as User)

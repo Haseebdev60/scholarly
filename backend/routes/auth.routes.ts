@@ -10,7 +10,9 @@ router.post('/register', async (req, res) => {
     try {
         const { name, email, password, role } = req.body ?? {}
         if (!name || !email || !password || !role) return res.status(400).json({ error: 'Missing fields' })
-        if (!['student', 'teacher', 'admin'].includes(role)) return res.status(400).json({ error: 'Invalid role' })
+        if (role !== 'student') {
+            return res.status(403).json({ error: 'Only student accounts can be created here. Teacher accounts are created by an administrator.' })
+        }
 
         const existing = await User.findOne({ email })
         if (existing) return res.status(409).json({ error: 'Email already in use' })
@@ -19,9 +21,9 @@ router.post('/register', async (req, res) => {
             name,
             email,
             password,
-            role: role as Role,
-            approved: role === 'teacher' ? false : true,
-            subscriptionStatus: role === 'student' ? 'free' : undefined,
+            role: 'student' as Role,
+            approved: true,
+            subscriptionStatus: 'free',
         })
 
         const token = signToken(doc._id.toString(), doc.role as Role)

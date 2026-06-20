@@ -17,7 +17,7 @@ type SidebarProps = {
 
 export const Sidebar = ({ items }: SidebarProps) => {
     return (
-        <aside className="sticky top-16 z-30 hidden h-[calc(100vh-4rem)] w-72 shrink-0 border-r border-slate-200/50 dark:border-white/5 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl lg:block">
+        <aside className="sticky top-20 z-30 hidden h-[calc(100vh-5rem)] w-72 shrink-0 border-r border-slate-200/60 dark:border-slate-800/60 bg-white dark:bg-slate-900 lg:block">
             <div className="flex h-full flex-col gap-2 p-5">
                 <div className="mb-8 px-4 flex items-center gap-3 mt-4">
                     <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-electric-blue text-white shadow-glow">

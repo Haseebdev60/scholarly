@@ -1,4 +1,7 @@
-import 'dotenv/config';
+import path from 'path';
+import dotenv from 'dotenv';
+dotenv.config({ path: path.join(process.cwd(), 'server', '.env') });
+dotenv.config(); // Fallback
 import 'express-async-errors'; // Handle async errors
 import express from 'express';
 import cors from 'cors';
@@ -169,6 +172,9 @@ if (process.env.NODE_ENV !== 'production') {
                 await Subject.insertMany(seedData);
             }
             
+            // Auto approve any pre-existing teachers in database to ensure visibility
+            await User.updateMany({ role: 'teacher', approved: { $ne: true } }, { approved: true });
+
             // Seed teachers if none exist
             const teacherCount = await User.countDocuments({ role: 'teacher' });
             if (teacherCount === 0) {

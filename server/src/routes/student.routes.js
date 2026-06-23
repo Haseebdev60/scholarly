@@ -8,6 +8,19 @@ const router = Router();
 router.use(requireAuth, requireRole('student'));
 // GET /api/student/enrolled-subjects
 router.get('/enrolled-subjects', async (req, res) => {
+    // 1. Assign fallback teacher to any subject that has teacherId: null
+    const fallbackTeacher = await User.findOne({ role: 'teacher', approved: true });
+    if (fallbackTeacher) {
+        const noTeacherSubjects = await Subject.find({ teacherId: null });
+        for (const subj of noTeacherSubjects) {
+            subj.teacherId = fallbackTeacher._id;
+            await subj.save();
+            await User.findByIdAndUpdate(fallbackTeacher._id, {
+                $addToSet: { assignedSubjects: subj._id }
+            });
+        }
+    }
+
     const student = await User.findById(req.user.id).populate({
         path: 'enrolledSubjects',
         populate: {
@@ -17,6 +30,32 @@ router.get('/enrolled-subjects', async (req, res) => {
     });
     if (!student)
         return res.status(404).json({ error: 'Student not found' });
+    
+    // Proactive Sync: If student has active subscription, check if they are enrolled in all subjects
+    const exp = student.subscriptionExpiryDate ? new Date(student.subscriptionExpiryDate) : null;
+    const hasActiveSub = student.subscriptionStatus !== 'free' && !!exp && exp.getTime() > Date.now();
+    if (hasActiveSub) {
+        const allSubjects = await Subject.find().select('_id');
+        const enrolledIds = student.enrolledSubjects.map(s => s._id.toString());
+        const missingIds = allSubjects.filter(s => !enrolledIds.includes(s._id.toString())).map(s => s._id);
+        
+        if (missingIds.length > 0) {
+            // Enroll in missing subjects
+            await User.findByIdAndUpdate(req.user.id, {
+                $addToSet: { enrolledSubjects: { $each: missingIds } }
+            });
+            // Re-fetch student with updated enrolledSubjects
+            const updatedStudent = await User.findById(req.user.id).populate({
+                path: 'enrolledSubjects',
+                populate: {
+                    path: 'teacherId',
+                    select: 'name avatar bio'
+                }
+            });
+            return res.json(updatedStudent.enrolledSubjects ?? []);
+        }
+    }
+    
     res.json(student.enrolledSubjects ?? []);
 });
 // POST /api/student/enroll-subject
@@ -45,8 +84,21 @@ router.get('/available-classes', requireActiveSubscription, async (req, res) => 
     const student = await User.findById(req.user.id).select('enrolledSubjects');
     if (!student)
         return res.status(404).json({ error: 'Student not found' });
+
+    // Proactive Sync: Make sure student is enrolled in all subjects
+    const allSubjects = await Subject.find().select('_id');
+    const allSubjectIds = allSubjects.map(s => s._id.toString());
+    const enrolledIds = student.enrolledSubjects.map(s => s.toString());
+    const missingIds = allSubjects.filter(s => !enrolledIds.includes(s._id.toString())).map(s => s._id);
+
+    if (missingIds.length > 0) {
+        await User.findByIdAndUpdate(req.user.id, {
+            $addToSet: { enrolledSubjects: { $each: missingIds } }
+        });
+        student.enrolledSubjects = [...student.enrolledSubjects, ...missingIds];
+    }
+
     const classes = await ClassModel.find({
-        isSubscriptionRequired: true,
         subjectId: { $in: student.enrolledSubjects }
     })
         .populate('subjectId', 'title')

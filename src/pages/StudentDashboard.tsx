@@ -290,7 +290,6 @@ const StudentDashboard = () => {
                           </div>
                           <h3 className="text-lg font-bold text-slate-900 dark:text-white line-clamp-1">{subject.title}</h3>
                       </div>
-                      <Badge color={subject.isPremium ? 'brand' : 'slate'} className="shrink-0">{subject.isPremium ? 'Premium' : 'Free'}</Badge>
                     </div>
                     <p className="text-sm font-medium text-slate-600 dark:text-slate-400 line-clamp-2 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl">{subject.description}</p>
                   </div>

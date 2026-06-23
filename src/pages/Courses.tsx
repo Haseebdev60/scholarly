@@ -185,11 +185,6 @@ const Courses = ({ onEnroll }: CoursesProps) => {
                                   <CheckCircleIcon className="h-4 w-4" /> Enrolled
                                </span>
                             )}
-                            {subject.isPremium ? (
-                               <span className="flex items-center gap-1 text-xs font-bold text-slate-900 bg-amber-400 px-3 py-1.5 rounded-lg shadow-sm">Premium</span>
-                            ) : (
-                               <span className="flex items-center gap-1 text-xs font-bold text-white bg-brand-500 px-3 py-1.5 rounded-lg shadow-sm">Free</span>
-                            )}
                          </div>
                          <div className="absolute bottom-4 left-4 z-10 flex gap-2 text-xs font-bold text-white">
                             <span className="bg-slate-900/80 backdrop-blur-md px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 border border-white/10">

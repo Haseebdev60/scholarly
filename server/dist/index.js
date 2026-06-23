@@ -26,7 +26,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-require("dotenv/config");
+const path_1 = __importDefault(require("path"));
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config({ path: path_1.default.join(process.cwd(), 'server', '.env') });
+dotenv_1.default.config(); // Fallback
 require("express-async-errors"); // Handle async errors
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
@@ -71,7 +74,7 @@ const seedData = [
 ];
 const PORT = process.env.PORT || 4000;
 const MONGO_URI = process.env.MONGO_URI;
-const path_1 = __importDefault(require("path"));
+const path_2 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
 const app = (0, express_1.default)();
 // CORS Configuration
@@ -195,6 +198,8 @@ if (process.env.NODE_ENV !== 'production') {
             if (count === 0 && seedData) {
                 await Subject_1.default.insertMany(seedData);
             }
+            // Auto approve any pre-existing teachers in database to ensure visibility
+            await User_1.default.updateMany({ role: 'teacher', approved: { $ne: true } }, { approved: true });
             // Seed teachers if none exist
             const teacherCount = await User_1.default.countDocuments({ role: 'teacher' });
             if (teacherCount === 0) {

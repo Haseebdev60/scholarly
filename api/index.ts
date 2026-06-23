@@ -60,6 +60,11 @@ const connectDB = async () => {
             socketTimeoutMS: 45000,
         })
         console.log('[MongoDB] Connected')
+        
+        // Auto-approve all existing teachers in the database to ensure visibility
+        const User = (await import('../backend/models/User.js')).default
+        await User.updateMany({ role: 'teacher', approved: { $ne: true } }, { approved: true })
+        console.log('[DB Migration] Approved all teachers')
     } catch (err) {
         console.error('[MongoDB] Error:', err)
         throw err
@@ -84,13 +89,13 @@ app.use(async (req, res, next) => {
 })
 
 // --- ROUTES ---
+app.use('/api', publicRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/student', studentRoutes)
 app.use('/api/teacher', teacherRoutes)
 app.use('/api/admin', adminRoutes)
 app.use('/api/subscriptions', subscriptionRoutes)
 app.use('/api/subjects', subjectRoutes)
-app.use('/api/public', publicRoutes)
 
 // Health Check
 app.get('/api/health', (req, res) => {

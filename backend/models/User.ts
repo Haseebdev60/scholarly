@@ -19,7 +19,7 @@ const userSchema = new Schema(
         enrolledSubjects: [{ type: Schema.Types.ObjectId, ref: 'Subject', default: [] }],
 
         // Teacher
-        approved: { type: Boolean, default: false },
+        approved: { type: Boolean, default: true },
         assignedSubjects: [{ type: Schema.Types.ObjectId, ref: 'Subject', default: [] }],
         bio: { type: String },
         avatar: { type: String },

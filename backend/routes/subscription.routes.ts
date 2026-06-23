@@ -10,9 +10,15 @@ router.post('/buy-subscription', requireAuth, async (req: AuthedRequest, res) =>
     const expiry = new Date()
     expiry.setDate(expiry.getDate() + duration)
 
+    // Fetch all available subjects to auto-enroll
+    const Subject = (await import('../models/Subject.js')).default
+    const subjects = await Subject.find().select('_id')
+    const subjectIds = subjects.map(s => s._id)
+
     const student = await User.findByIdAndUpdate(req.user!.id, {
         subscriptionStatus: plan,
-        subscriptionExpiryDate: expiry
+        subscriptionExpiryDate: expiry,
+        enrolledSubjects: subjectIds
     }, { new: true })
 
     res.json({

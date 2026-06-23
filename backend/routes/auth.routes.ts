@@ -2,8 +2,10 @@ import { Router } from 'express'
 import User from '../models/User.js'
 import { signToken, verifyToken } from '../utils/jwt.js'
 import type { Role } from '../types/index.js'
+import { OAuth2Client } from 'google-auth-library'
 
 const router = Router()
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID')
 
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
@@ -57,6 +59,49 @@ router.post('/login', async (req, res) => {
     } catch (err: any) {
         console.error('Login Error:', err)
         res.status(500).json({ error: err.message || 'Login failed' })
+    }
+})
+
+// POST /api/auth/google
+router.post('/google', async (req, res) => {
+    const { credential, role = 'student' } = req.body ?? {}
+    if (!credential) return res.status(400).json({ error: 'Missing Google credential' })
+    
+    try {
+        const ticket = await googleClient.verifyIdToken({
+            idToken: credential,
+        })
+        const payload = ticket.getPayload()
+        if (!payload) throw new Error('Invalid Google payload')
+        
+        const { sub: googleId, email, name, picture } = payload
+        
+        let user = await User.findOne({ email })
+        
+        if (!user) {
+            user = await User.create({
+                name,
+                email,
+                googleId,
+                role,
+                avatar: picture,
+                approved: true,
+                subscriptionStatus: role === 'student' ? 'free' : undefined,
+            })
+        } else if (!user.googleId) {
+            user.googleId = googleId
+            if (!user.avatar) user.avatar = picture
+            await user.save()
+        }
+        
+        const token = signToken(user._id.toString(), user.role as Role)
+        res.json({
+            token,
+            user: { id: user._id, name: user.name, email: user.email, role: user.role, approved: user.approved, avatar: user.avatar },
+        })
+    } catch (error: any) {
+        console.error('Google Auth Error:', error)
+        res.status(401).json({ error: 'Invalid Google token' })
     }
 })
 

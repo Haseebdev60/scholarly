@@ -304,7 +304,7 @@ const StudentDashboard = () => {
                         )}
                       </div>
                       <div>
-                        <div className="text-xs font-bold text-slate-900 dark:text-white">{subject.teacherId?.name || 'Scholarly Faculty'}</div>
+                        <div className="text-xs font-bold text-slate-900 dark:text-white">{subject.teacherId?.name || 'No Teacher Assigned'}</div>
                         <div className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">Instructor</div>
                       </div>
                     </div>

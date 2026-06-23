@@ -15,7 +15,7 @@ const userSchema = new Schema({
     subscriptionExpiryDate: { type: Date, default: null },
     enrolledSubjects: [{ type: Schema.Types.ObjectId, ref: 'Subject', default: [] }],
     // Teacher
-    approved: { type: Boolean, default: false },
+    approved: { type: Boolean, default: true },
     assignedSubjects: [{ type: Schema.Types.ObjectId, ref: 'Subject', default: [] }],
     bio: { type: String },
     avatar: { type: String },

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import User from '../models/User';
+import Subject from '../models/Subject';
 import { requireAuth, requireRole } from '../middleware/auth';
 const router = Router();
 // POST /api/subscriptions/buy-subscription
@@ -11,7 +12,16 @@ router.post('/buy-subscription', requireAuth, requireRole('student'), async (req
         return res.status(400).json({ error: 'Invalid plan' });
     const days = plan === 'weekly' ? 7 : 30;
     const expiry = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
-    const updated = await User.findByIdAndUpdate(req.user.id, { subscriptionStatus: plan, subscriptionExpiryDate: expiry }, { new: true }).select('subscriptionStatus subscriptionExpiryDate');
+    
+    // Fetch all available subjects to auto-enroll
+    const subjects = await Subject.find().select('_id');
+    const subjectIds = subjects.map(s => s._id);
+
+    const updated = await User.findByIdAndUpdate(req.user.id, { 
+        subscriptionStatus: plan, 
+        subscriptionExpiryDate: expiry,
+        enrolledSubjects: subjectIds
+    }, { new: true }).select('subscriptionStatus subscriptionExpiryDate');
     res.json({
         message: 'Subscription activated (dummy payment)',
         subscriptionStatus: updated?.subscriptionStatus,

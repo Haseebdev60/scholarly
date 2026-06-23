@@ -119,33 +119,18 @@ const Courses = ({ onEnroll }: CoursesProps) => {
              initial="initial" animate="animate" variants={fadeUp}
              className="mt-12 flex flex-col lg:flex-row items-center gap-4 bg-white/60 dark:bg-slate-900/60 p-2 rounded-2xl border border-slate-200/50 dark:border-white/10 shadow-soft backdrop-blur-md"
           >
-             <div className="relative w-full lg:w-[400px]">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                   <MagnifyingGlassIcon className="h-5 w-5 text-slate-400" />
-                </div>
-                <input 
-                   type="text" 
-                   placeholder="Search for courses..."
-                   value={searchQuery}
-                   onChange={(e) => setSearchQuery(e.target.value)}
-                   className="block w-full pl-12 pr-4 py-3.5 rounded-xl bg-slate-100/50 dark:bg-slate-800/50 border border-transparent text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-brand-500 transition-all font-medium"
-                />
-             </div>
-
-            <div className="flex w-full lg:w-auto gap-2 bg-slate-100/50 dark:bg-slate-800/50 p-1.5 rounded-xl flex-1 lg:flex-none">
-              {(['All', 'Premium', 'Free'] as const).map(f => (
-                <button
-                  key={f}
-                  onClick={() => setFilter(f)}
-                  className={`flex-1 lg:flex-none px-6 py-2.5 rounded-lg text-sm font-bold transition-all relative ${filter === f ? 'text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
-                >
-                  {filter === f && (
-                    <motion.div layoutId="filter-active" className="absolute inset-0 bg-white dark:bg-slate-700 rounded-lg -z-10" />
-                  )}
-                  {f}
-                </button>
-              ))}
-            </div>
+              <div className="relative w-full lg:w-[400px]">
+                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <MagnifyingGlassIcon className="h-5 w-5 text-slate-400" />
+                 </div>
+                 <input 
+                    type="text" 
+                    placeholder="Search for courses..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="block w-full pl-12 pr-4 py-3.5 rounded-xl bg-slate-100/50 dark:bg-slate-800/50 border border-transparent text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-brand-500 transition-all font-medium"
+                 />
+              </div>
           </motion.div>
         </div>
       </div>

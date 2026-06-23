@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const User_1 = __importDefault(require("../models/User"));
+const Subject_1 = __importDefault(require("../models/Subject"));
 const auth_1 = require("../middleware/auth");
 const router = (0, express_1.Router)();
 // POST /api/subscriptions/buy-subscription
@@ -16,7 +17,14 @@ router.post('/buy-subscription', auth_1.requireAuth, (0, auth_1.requireRole)('st
         return res.status(400).json({ error: 'Invalid plan' });
     const days = plan === 'weekly' ? 7 : 30;
     const expiry = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
-    const updated = await User_1.default.findByIdAndUpdate(req.user.id, { subscriptionStatus: plan, subscriptionExpiryDate: expiry }, { new: true }).select('subscriptionStatus subscriptionExpiryDate');
+    // Fetch all available subjects to auto-enroll
+    const subjects = await Subject_1.default.find().select('_id');
+    const subjectIds = subjects.map(s => s._id);
+    const updated = await User_1.default.findByIdAndUpdate(req.user.id, {
+        subscriptionStatus: plan,
+        subscriptionExpiryDate: expiry,
+        enrolledSubjects: subjectIds
+    }, { new: true }).select('subscriptionStatus subscriptionExpiryDate');
     res.json({
         message: 'Subscription activated (dummy payment)',
         subscriptionStatus: updated?.subscriptionStatus,

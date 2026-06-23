@@ -43,7 +43,7 @@ const userSchema = new mongoose_1.Schema({
     subscriptionExpiryDate: { type: Date, default: null },
     enrolledSubjects: [{ type: mongoose_1.Schema.Types.ObjectId, ref: 'Subject', default: [] }],
     // Teacher
-    approved: { type: Boolean, default: false },
+    approved: { type: Boolean, default: true },
     assignedSubjects: [{ type: mongoose_1.Schema.Types.ObjectId, ref: 'Subject', default: [] }],
     bio: { type: String },
     avatar: { type: String },

@@ -76,7 +76,7 @@ router.post('/google', async (req, res) => {
                 googleId,
                 role,
                 avatar: picture,
-                approved: role === 'teacher' ? false : true,
+                approved: true,
                 subscriptionStatus: role === 'student' ? 'free' : undefined,
             });
         }

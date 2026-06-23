@@ -44,17 +44,52 @@ router.post('/create-quiz', async (req: AuthedRequest, res) => {
 
 // POST /api/teacher/create-resource
 router.post('/create-resource', async (req: AuthedRequest, res) => {
-    const { title, type, url, subjectId, isPremium } = req.body
-    const resource = await Resource.create({
-        title,
-        type,
-        url,
-        subjectId,
-        teacherId: req.user!.id,
-        uploadedBy: 'teacher',
-        isPremium
-    })
-    res.json(resource)
+    try {
+        const { title, type, url, subjectId, isPremium, fileType, size, fileData, fileName, format, year, thumbnail } = req.body
+        if (!title || !subjectId) return res.status(400).json({ error: 'Missing fields' })
+
+        let finalUrl = url
+        if (fileData && fileName) {
+            try {
+                const fs = await import('fs')
+                const path = await import('path')
+                const uploadsDir = process.env.NODE_ENV === 'production'
+                    ? path.join('/tmp', 'uploads')
+                    : path.join(process.cwd(), 'public/uploads')
+
+                if (!fs.existsSync(uploadsDir)) {
+                    fs.mkdirSync(uploadsDir, { recursive: true })
+                }
+                const uniqueName = `${Date.now()}-${fileName.replace(/[^a-zA-Z0-9.]/g, '_')}`
+                const filePath = path.join(uploadsDir, uniqueName)
+                const base64Data = fileData.replace(/^data:.*,/, '')
+                await fs.promises.writeFile(filePath, base64Data, 'base64')
+                finalUrl = `/uploads/${uniqueName}`
+            } catch (err: any) {
+                console.error("Upload error:", err)
+                return res.status(500).json({ error: 'Failed to write file' })
+            }
+        }
+
+        const resource = await Resource.create({
+            title,
+            type: type || 'link',
+            url: finalUrl,
+            subjectId,
+            teacherId: req.user!.id,
+            uploadedBy: 'teacher',
+            isPremium: isPremium || false,
+            fileType,
+            size,
+            format,
+            year,
+            thumbnail
+        })
+        res.json(resource)
+    } catch (err: any) {
+        console.error('Create Resource Error:', err)
+        res.status(500).json({ error: err.message || 'Internal server error' })
+    }
 })
 
 // GET /api/teacher/dashboard

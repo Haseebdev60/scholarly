@@ -27,6 +27,15 @@ app.use(morgan('dev'))
 app.use(express.json({ limit: '50mb' }))
 app.use(express.urlencoded({ limit: '50mb', extended: true }))
 
+// Serve uploads directory
+const uploadsDir = process.env.NODE_ENV === 'production'
+    ? path.join('/tmp', 'uploads')
+    : path.join(process.cwd(), 'public/uploads')
+
+if (process.env.NODE_ENV !== 'production') {
+    app.use('/uploads', express.static(uploadsDir))
+}
+
 // CORS Configuration
 const allowedOrigins = [
     'http://localhost:5173',

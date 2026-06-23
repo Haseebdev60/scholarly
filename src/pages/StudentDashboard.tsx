@@ -13,7 +13,7 @@ const StudentDashboard = () => {
   const { user, subscriptionStatus, refreshSubscription } = useAuth()
   const navigate = useNavigate()
   const [enrolledSubjects, setEnrolledSubjects] = useState<
-    Array<{ _id: string; title: string; description: string; teacherId: string; isPremium: boolean }>
+    Array<{ _id: string; title: string; description: string; teacherId: any; isPremium: boolean }>
   >([])
   const [upcomingClasses, setUpcomingClasses] = useState<Array<{
     _id: string
@@ -49,20 +49,28 @@ const StudentDashboard = () => {
   }, [user])
 
   const loadData = async () => {
+    setIsLoading(true)
     try {
-      const [subjects, classes, books] = await Promise.all([
-        studentApi.getEnrolledSubjects(),
-        studentApi.getAvailableClasses(),
-        studentApi.getBookings()
-      ])
+      const subjects = await studentApi.getEnrolledSubjects()
       setEnrolledSubjects(subjects)
+    } catch (error: any) {
+      console.error('Failed to load enrolled subjects:', error)
+    }
+
+    try {
+      const classes = await studentApi.getAvailableClasses()
       setUpcomingClasses(classes)
+    } catch (error: any) {
+      console.error('Failed to load available classes:', error)
+    }
+
+    try {
+      const books = await studentApi.getBookings()
       setBookings(books)
     } catch (error: any) {
-      console.error('Failed to load data:', error)
-    } finally {
-      setIsLoading(false)
+      console.error('Failed to load bookings:', error)
     }
+    setIsLoading(false)
   }
 
   const handleBuySubscription = async (plan: 'weekly' | 'monthly') => {
@@ -273,17 +281,34 @@ const StudentDashboard = () => {
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {enrolledSubjects.map((subject) => (
-                <GlassCard key={subject._id} glowHover className="space-y-4 p-6 h-full flex flex-col">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center text-brand-600 dark:text-brand-400">
-                            <AcademicCapIcon className="w-6 h-6" />
-                        </div>
-                        <h3 className="text-lg font-bold text-slate-900 dark:text-white line-clamp-1">{subject.title}</h3>
+                <GlassCard key={subject._id} glowHover className="space-y-4 p-6 h-full flex flex-col justify-between">
+                  <div className="space-y-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center text-brand-600 dark:text-brand-400">
+                              <AcademicCapIcon className="w-6 h-6" />
+                          </div>
+                          <h3 className="text-lg font-bold text-slate-900 dark:text-white line-clamp-1">{subject.title}</h3>
+                      </div>
+                      <Badge color={subject.isPremium ? 'brand' : 'slate'} className="shrink-0">{subject.isPremium ? 'Premium' : 'Free'}</Badge>
                     </div>
-                    <Badge color={subject.isPremium ? 'brand' : 'slate'} className="shrink-0">{subject.isPremium ? 'Premium' : 'Free'}</Badge>
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400 line-clamp-2 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl">{subject.description}</p>
                   </div>
-                  <p className="text-sm font-medium text-slate-600 dark:text-slate-400 line-clamp-2 flex-1 mt-2 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl">{subject.description}</p>
+                  <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-white/10 mt-auto">
+                    <div className="flex items-center gap-2.5">
+                      <div className="h-8 w-8 rounded-full bg-gradient-to-br from-brand-500 to-purple-500 flex items-center justify-center text-xs font-bold text-white shadow-sm shrink-0 overflow-hidden">
+                        {subject.teacherId?.avatar ? (
+                          <img src={subject.teacherId.avatar} alt={subject.teacherId.name} className="h-full w-full object-cover" />
+                        ) : (
+                          subject.teacherId?.name?.charAt(0) || 'S'
+                        )}
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold text-slate-900 dark:text-white">{subject.teacherId?.name || 'Scholarly Faculty'}</div>
+                        <div className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">Instructor</div>
+                      </div>
+                    </div>
+                  </div>
                 </GlassCard>
               ))}
             </div>

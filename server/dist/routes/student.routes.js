@@ -36,7 +36,13 @@ const router = (0, express_1.Router)();
 router.use(auth_1.requireAuth, (0, auth_1.requireRole)('student'));
 // GET /api/student/enrolled-subjects
 router.get('/enrolled-subjects', async (req, res) => {
-    const student = await User_1.default.findById(req.user.id).populate('enrolledSubjects');
+    const student = await User_1.default.findById(req.user.id).populate({
+        path: 'enrolledSubjects',
+        populate: {
+            path: 'teacherId',
+            select: 'name avatar bio'
+        }
+    });
     if (!student)
         return res.status(404).json({ error: 'Student not found' });
     res.json(student.enrolledSubjects ?? []);

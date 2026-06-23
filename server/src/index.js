@@ -155,6 +155,9 @@ app.use(async (_req, _res, next) => {
     }
     next();
 });
+import User from './models/User';
+import bcrypt from 'bcryptjs';
+
 // Export app for Vercel
 export default app;
 // Start Server if not on Vercel
@@ -162,8 +165,104 @@ if (process.env.NODE_ENV !== 'production') {
     connectDB().then(() => {
         // Basic seeding
         Subject.countDocuments().then(async (count) => {
-            if (count === 0 && seedData)
+            if (count === 0 && seedData) {
                 await Subject.insertMany(seedData);
+            }
+            
+            // Seed teachers if none exist
+            const teacherCount = await User.countDocuments({ role: 'teacher' });
+            if (teacherCount === 0) {
+                const hashedPassword = await bcrypt.hash('secret', 10);
+                
+                const teachersToSeed = [
+                    {
+                        name: 'Dr. Sarah Jenkins',
+                        email: 'sarah.jenkins@scholarly.com',
+                        password: hashedPassword,
+                        role: 'teacher',
+                        approved: true,
+                        bio: 'Dr. Sarah Jenkins has a PhD in Applied Mathematics. She has been teaching advanced calculus and physics for over a decade.',
+                        avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
+                        hourlyRate: 2500,
+                        availability: [
+                            { day: 'Monday', slots: [{ startTime: '09:00', endTime: '12:00', duration: 180 }] },
+                            { day: 'Wednesday', slots: [{ startTime: '14:00', endTime: '17:00', duration: 180 }] }
+                        ]
+                    },
+                    {
+                        name: 'Prof. Albert Vance',
+                        email: 'albert.vance@scholarly.com',
+                        password: hashedPassword,
+                        role: 'teacher',
+                        approved: true,
+                        bio: 'Prof. Albert Vance is a chemistry and computer science enthusiast. He loves making complex programming and chemical concepts simple.',
+                        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
+                        hourlyRate: 2000,
+                        availability: [
+                            { day: 'Tuesday', slots: [{ startTime: '10:00', endTime: '13:00', duration: 180 }] },
+                            { day: 'Thursday', slots: [{ startTime: '15:00', endTime: '18:00', duration: 180 }] }
+                        ]
+                    },
+                    {
+                        name: 'Helen Miller',
+                        email: 'helen.miller@scholarly.com',
+                        password: hashedPassword,
+                        role: 'teacher',
+                        approved: true,
+                        bio: 'Helen Miller is an English literature professor who specializes in classical analysis and critical reading skills.',
+                        avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150',
+                        hourlyRate: 1800,
+                        availability: [
+                            { day: 'Friday', slots: [{ startTime: '09:00', endTime: '12:00', duration: 180 }] }
+                        ]
+                    }
+                ];
+
+                const createdTeachers = await User.insertMany(teachersToSeed);
+
+                // Now link subjects to teachers and vice versa
+                const mathSubject = await Subject.findOne({ title: 'Advanced Mathematics' });
+                const physicsSubject = await Subject.findOne({ title: 'Physics Fundamentals' });
+                const chemSubject = await Subject.findOne({ title: 'Introductory Chemistry' });
+                const csSubject = await Subject.findOne({ title: 'Computer Science 101' });
+                const engSubject = await Subject.findOne({ title: 'English Literature' });
+
+                const sarah = createdTeachers[0];
+                const albert = createdTeachers[1];
+                const helen = createdTeachers[2];
+
+                if (mathSubject) {
+                    mathSubject.teacherId = sarah._id;
+                    await mathSubject.save();
+                    sarah.assignedSubjects.push(mathSubject._id);
+                }
+                if (physicsSubject) {
+                    physicsSubject.teacherId = sarah._id;
+                    await physicsSubject.save();
+                    sarah.assignedSubjects.push(physicsSubject._id);
+                }
+                await sarah.save();
+
+                if (chemSubject) {
+                    chemSubject.teacherId = albert._id;
+                    await chemSubject.save();
+                    albert.assignedSubjects.push(chemSubject._id);
+                }
+                if (csSubject) {
+                    csSubject.teacherId = albert._id;
+                    await csSubject.save();
+                    albert.assignedSubjects.push(csSubject._id);
+                }
+                await albert.save();
+
+                if (engSubject) {
+                    engSubject.teacherId = helen._id;
+                    await engSubject.save();
+                    helen.assignedSubjects.push(engSubject._id);
+                    await helen.save();
+                }
+                console.log('Seeded teachers and linked them to subjects!');
+            }
         });
         app.listen(PORT, () => {
             console.log(`API running on http://localhost:${PORT}`);

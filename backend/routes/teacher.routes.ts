@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import mongoose from 'mongoose'
 import User from '../models/User.js'
 import Class from '../models/Class.js'
 import Subject from '../models/Subject.js'
@@ -137,6 +138,117 @@ router.post('/availability', async (req: AuthedRequest, res) => {
 router.get('/availability', async (req: AuthedRequest, res) => {
     const user = await User.findById(req.user!.id)
     res.json(user?.availability || [])
+})
+
+// POST /api/teacher/settings
+router.post('/settings', async (req: AuthedRequest, res) => {
+    try {
+        const { hourlyRate } = req.body
+        await User.findByIdAndUpdate(req.user!.id, { hourlyRate })
+        res.json({ success: true })
+    } catch (err: any) {
+        res.status(500).json({ error: err.message })
+    }
+})
+
+// GET /api/teacher/messages
+router.get('/messages', async (req: AuthedRequest, res) => {
+    try {
+        const messages = await Message.find({ recipientId: req.user!.id })
+            .sort({ createdAt: -1 })
+            .populate('senderId', 'name')
+        res.json(messages)
+    } catch (err: any) {
+        res.status(500).json({ error: err.message })
+    }
+})
+
+// GET /api/teacher/conversations
+router.get('/conversations', async (req: AuthedRequest, res) => {
+    try {
+        const teacherIdObj = new mongoose.Types.ObjectId(req.user!.id)
+        const conversations = await Message.aggregate([
+            { $match: { $or: [{ senderId: teacherIdObj }, { recipientId: teacherIdObj }] } },
+            { $sort: { createdAt: -1 } },
+            {
+                $group: {
+                    _id: {
+                        $cond: [{ $eq: ["$senderId", teacherIdObj] }, "$recipientId", "$senderId"]
+                    },
+                    lastMessage: { $first: "$$ROOT" }
+                }
+            },
+            { $lookup: { from: 'users', localField: '_id', foreignField: '_id', as: 'user' } },
+            { $unwind: '$user' },
+            {
+                $project: {
+                    _id: 1,
+                    name: '$user.name',
+                    lastMessage: 1
+                }
+            }
+        ])
+        res.json(conversations)
+    } catch (err: any) {
+        res.status(500).json({ error: err.message })
+    }
+})
+
+// GET /api/teacher/messages/:userId
+router.get('/messages/:userId', async (req: AuthedRequest, res) => {
+    try {
+        const messages = await Message.find({
+            $or: [
+                { senderId: req.user!.id, recipientId: req.params.userId },
+                { senderId: req.params.userId, recipientId: req.user!.id }
+            ]
+        }).sort({ createdAt: 1 })
+        res.json(messages)
+    } catch (err: any) {
+        res.status(500).json({ error: err.message })
+    }
+})
+
+// POST /api/teacher/message
+router.post('/message', async (req: AuthedRequest, res) => {
+    try {
+        const { recipientId, content } = req.body
+        const recipient = await User.findById(recipientId)
+        const msg = await Message.create({
+            senderId: req.user!.id,
+            recipientId,
+            recipientName: recipient?.name || 'Unknown',
+            subject: 'Chat',
+            content,
+            read: false
+        })
+        res.json(msg)
+    } catch (err: any) {
+        res.status(500).json({ error: err.message })
+    }
+})
+
+// POST /api/teacher/cancel-booking
+router.post('/cancel-booking', async (req: AuthedRequest, res) => {
+    try {
+        const { bookingId } = req.body
+        await Booking.findByIdAndUpdate(bookingId, { status: 'cancelled' })
+        res.json({ success: true })
+    } catch (err: any) {
+        res.status(500).json({ error: err.message })
+    }
+})
+
+// PUT /api/teacher/booking/:bookingId
+router.put('/booking/:bookingId', async (req: AuthedRequest, res) => {
+    try {
+        const { bookingId } = req.params
+        const { meetingLink } = req.body
+        await Booking.findByIdAndUpdate(bookingId, { meetingLink })
+        res.json({ success: true })
+    } catch (err: any) {
+        res.status(500).json({ error: err.message })
+    }
 })
 
 export default router

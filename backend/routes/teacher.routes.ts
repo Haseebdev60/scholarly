@@ -17,17 +17,22 @@ router.use(requireRole('teacher'))
 
 // POST /api/teacher/create-class
 router.post('/create-class', async (req: AuthedRequest, res) => {
-    const { title, subjectId, scheduledDate, duration, classType } = req.body
-    const newClass = await Class.create({
-        title,
-        subjectId,
-        teacherId: req.user!.id,
-        scheduledDate,
-        duration,
-        classType,
-        isSubscriptionRequired: true
-    })
-    res.json(newClass)
+    try {
+        const { title, subjectId, scheduledDate, duration, classType, meetingLink } = req.body
+        const newClass = await Class.create({
+            title,
+            subjectId,
+            teacherId: req.user!.id,
+            scheduledDate,
+            duration,
+            classType,
+            meetingLink,
+            isSubscriptionRequired: true
+        })
+        res.json(newClass)
+    } catch (error: any) {
+        res.status(500).json({ error: error.message })
+    }
 })
 
 // POST /api/teacher/create-quiz

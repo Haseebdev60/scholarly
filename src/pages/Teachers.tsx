@@ -7,6 +7,7 @@ import { publicApi, studentApi } from '../lib/api'
 import { useAuth } from '../contexts/AuthContext'
 import { fadeUp, staggerContainer, scaleIn } from '../lib/utils'
 import { StarIcon, AcademicCapIcon, ChatBubbleLeftEllipsisIcon, CalendarIcon, CheckBadgeIcon, ClockIcon } from '@heroicons/react/24/outline'
+import AlertDialog, { type AlertDialogProps } from '../components/AlertDialog'
 
 type TeachersProps = {
   onContact: (id: string, name: string) => void
@@ -31,6 +32,18 @@ const Teachers = ({ onContact }: TeachersProps) => {
   const [loadingAvail, setLoadingAvail] = useState(false)
   const [selectedSlot, setSelectedSlot] = useState<{ date: Date, startTime: string, duration: number } | null>(null)
   const [notes, setNotes] = useState('')
+  const [alertState, setAlertState] = useState<{
+    open: boolean
+    title: string
+    message: string
+    type: 'success' | 'error' | 'info' | 'confirm'
+    onConfirm?: () => void
+  }>({
+    open: false,
+    title: '',
+    message: '',
+    type: 'info',
+  })
 
   const handleBookClick = async (teacher: any) => {
     setBookingTeacher(teacher)
@@ -42,16 +55,19 @@ const Teachers = ({ onContact }: TeachersProps) => {
       setTeacherAvailability(res)
     } catch (e) {
       console.error(e)
-      alert('Failed to load availability')
+      setAlertState({
+        open: true,
+        title: 'Error',
+        message: 'Failed to load availability',
+        type: 'error'
+      })
     } finally {
       setLoadingAvail(false)
     }
   }
 
-  const confirmBooking = async () => {
+  const executeBooking = async () => {
     if (!selectedSlot || !bookingTeacher) return
-    if (!confirm(`Book class with ${bookingTeacher.name} on ${selectedSlot.date.toLocaleDateString()} at ${selectedSlot.startTime}?`)) return
-
     try {
       await studentApi.bookClass({
         teacherId: bookingTeacher._id,
@@ -59,11 +75,32 @@ const Teachers = ({ onContact }: TeachersProps) => {
         duration: selectedSlot.duration,
         notes
       })
-      alert('Booking confirmed!')
       setBookingTeacher(null)
+      setAlertState({
+        open: true,
+        title: 'Success',
+        message: 'Booking confirmed!',
+        type: 'success'
+      })
     } catch (e: any) {
-      alert(`Booking failed: ${e.message}`)
+      setAlertState({
+        open: true,
+        title: 'Error',
+        message: `Booking failed: ${e.message}`,
+        type: 'error'
+      })
     }
+  }
+
+  const confirmBooking = async () => {
+    if (!selectedSlot || !bookingTeacher) return
+    setAlertState({
+      open: true,
+      title: 'Confirm Booking',
+      message: `Book class with ${bookingTeacher.name} on ${selectedSlot.date.toLocaleDateString()} at ${selectedSlot.startTime}?`,
+      type: 'confirm',
+      onConfirm: executeBooking
+    })
   }
 
   const getAvailableSlots = () => {
@@ -297,6 +334,15 @@ const Teachers = ({ onContact }: TeachersProps) => {
           )}
         </AnimatePresence>
       </div>
+
+      <AlertDialog
+        open={alertState.open}
+        onClose={() => setAlertState(prev => ({ ...prev, open: false }))}
+        title={alertState.title}
+        message={alertState.message}
+        type={alertState.type}
+        onConfirm={alertState.onConfirm}
+      />
     </div>
   )
 }

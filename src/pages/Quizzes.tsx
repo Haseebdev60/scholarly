@@ -6,9 +6,13 @@ import { useAuth } from '../contexts/AuthContext'
 import { quizApi, publicApi, studentApi } from '../lib/api'
 import { VideoCameraIcon, PlayCircleIcon, DocumentTextIcon, ArrowDownTrayIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline'
 import VideoModal from '../components/VideoModal'
+import AlertDialog, { type AlertDialogProps } from '../components/AlertDialog'
 
 const Quizzes = () => {
   const { subscriptionStatus } = useAuth()
+  const [alertState, setAlertState] = useState<Omit<AlertDialogProps, 'onClose' | 'onConfirm'> & { open: boolean }>({
+    open: false, title: '', message: '', type: 'info'
+  })
   const [quizzes, setQuizzes] = useState<
     Array<{
       _id: string
@@ -93,16 +97,31 @@ const Quizzes = () => {
 
     // Check if at least one question is answered (ignoring -1)
     if (answers.every(a => a === -1)) {
-      alert('Please answer at least one question.')
+      setAlertState({
+        open: true,
+        title: 'Validation',
+        message: 'Please answer at least one question.',
+        type: 'info'
+      })
       return
     }
 
     try {
       const result = await studentApi.attemptQuiz(selectedQuiz, answers)
       setQuizResult(result)
-      alert(`Quiz completed! Score: ${result.correctAnswers}/${result.totalQuestions} (${result.score}%)`)
+      setAlertState({
+        open: true,
+        title: 'Quiz Completed',
+        message: `Quiz completed! Score: ${result.correctAnswers}/${result.totalQuestions} (${result.score}%)`,
+        type: 'success'
+      })
     } catch (error: any) {
-      alert(`Failed to submit quiz: ${error.message}`)
+      setAlertState({
+        open: true,
+        title: 'Error',
+        message: `Failed to submit quiz: ${error.message}`,
+        type: 'error'
+      })
     }
   }
 
@@ -468,6 +487,14 @@ const Quizzes = () => {
           type={playingVideo.type as any}
         />
       )}
+
+      <AlertDialog
+        open={alertState.open}
+        onClose={() => setAlertState(prev => ({ ...prev, open: false }))}
+        title={alertState.title}
+        message={alertState.message}
+        type={alertState.type}
+      />
     </div>
   )
 }

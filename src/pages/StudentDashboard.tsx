@@ -8,6 +8,7 @@ import { GlassCard } from '../components/GlassCard'
 import DashboardLayout from '../components/DashboardLayout'
 import { useAuth } from '../contexts/AuthContext'
 import { studentApi, subscriptionApi, publicApi } from '../lib/api'
+import AlertDialog, { type AlertDialogProps } from '../components/AlertDialog'
 
 const StudentDashboard = () => {
   const { user, subscriptionStatus, refreshSubscription } = useAuth()
@@ -15,6 +16,18 @@ const StudentDashboard = () => {
   const [enrolledSubjects, setEnrolledSubjects] = useState<
     Array<{ _id: string; title: string; description: string; teacherId: any; isPremium: boolean }>
   >([])
+  const [alertState, setAlertState] = useState<{
+    open: boolean
+    title: string
+    message: string
+    type: 'success' | 'error' | 'info' | 'confirm'
+    onConfirm?: () => void
+  }>({
+    open: false,
+    title: '',
+    message: '',
+    type: 'info',
+  })
   const [upcomingClasses, setUpcomingClasses] = useState<Array<{
     _id: string
     title: string
@@ -77,9 +90,19 @@ const StudentDashboard = () => {
     try {
       await subscriptionApi.buySubscription(plan)
       await refreshSubscription()
-      alert(`Subscription purchased! ${plan === 'weekly' ? 'Weekly' : 'Monthly'} plan activated.`)
+      setAlertState({
+        open: true,
+        title: 'Subscription Purchased',
+        message: `Subscription purchased! ${plan === 'weekly' ? 'Weekly' : 'Monthly'} plan activated.`,
+        type: 'success'
+      })
     } catch (error: any) {
-      alert(`Failed to purchase subscription: ${error.message}`)
+      setAlertState({
+        open: true,
+        title: 'Error',
+        message: `Failed to purchase subscription: ${error.message}`,
+        type: 'error'
+      })
     }
   }
 
@@ -231,28 +254,63 @@ const StudentDashboard = () => {
 
                   <div className="pt-2 flex gap-3 mt-auto">
                     {book.status === 'pending_payment' && (
-                      <Button className="flex-1 h-12 font-bold rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 border-none shadow-glow hover:shadow-glow-hover text-white" onClick={async () => {
-                        if (!confirm(`Pay PKR ${book.price} for this class?`)) return
-                        try {
-                          await studentApi.payBooking(book._id)
-                          alert('Payment successful! Booking confirmed.')
-                          loadData()
-                        } catch (e: any) {
-                          alert(`Payment failed: ${e.message}`)
-                        }
+                      <Button className="flex-1 h-12 font-bold rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 border-none shadow-glow hover:shadow-glow-hover text-white" onClick={() => {
+                        setAlertState({
+                          open: true,
+                          title: 'Confirm Payment',
+                          message: `Pay PKR ${book.price} for this class?`,
+                          type: 'confirm',
+                          onConfirm: async () => {
+                            try {
+                              await studentApi.payBooking(book._id)
+                              loadData()
+                              setAlertState({
+                                open: true,
+                                title: 'Payment Success',
+                                message: 'Payment successful! Booking confirmed.',
+                                type: 'success'
+                              })
+                            } catch (e: any) {
+                              setAlertState({
+                                open: true,
+                                title: 'Payment Failed',
+                                message: `Payment failed: ${e.message}`,
+                                type: 'error'
+                              })
+                            }
+                          }
+                        })
                       }}>
                         Pay Now
                       </Button>
                     )}
                     {(book.status === 'pending_payment' || book.status === 'confirmed') && (
-                      <Button variant="danger" className="flex-1 h-12 font-bold rounded-xl" onClick={async () => {
-                        if (!confirm('Cancel booking?')) return
-                        try {
-                          await studentApi.cancelBooking(book._id)
-                          loadData()
-                        } catch (e) {
-                          alert('Failed to cancel')
-                        }
+                      <Button variant="danger" className="flex-1 h-12 font-bold rounded-xl" onClick={() => {
+                        setAlertState({
+                          open: true,
+                          title: 'Cancel Booking',
+                          message: 'Are you sure you want to cancel this booking?',
+                          type: 'confirm',
+                          onConfirm: async () => {
+                            try {
+                              await studentApi.cancelBooking(book._id)
+                              loadData()
+                              setAlertState({
+                                open: true,
+                                title: 'Cancelled',
+                                message: 'Booking cancelled successfully.',
+                                type: 'success'
+                              })
+                            } catch (e: any) {
+                              setAlertState({
+                                open: true,
+                                title: 'Error',
+                                message: e.message || 'Failed to cancel',
+                                type: 'error'
+                              })
+                            }
+                          }
+                        })
                       }}>
                         Cancel
                       </Button>
@@ -358,7 +416,14 @@ const StudentDashboard = () => {
                     const convs = await studentApi.getConversations()
                     setConversations(convs)
                   }
-                } catch (e) { alert('Could not contact admin') }
+                } catch (e) {
+                  setAlertState({
+                    open: true,
+                    title: 'Error',
+                    message: 'Could not contact admin',
+                    type: 'error'
+                  })
+                }
               }}>Contact Admin</Button>
             </div>
           </div>
@@ -414,6 +479,15 @@ const StudentDashboard = () => {
           </div>
         </div>
       </Modal>
+
+      <AlertDialog
+        open={alertState.open}
+        onClose={() => setAlertState(prev => ({ ...prev, open: false }))}
+        title={alertState.title}
+        message={alertState.message}
+        type={alertState.type}
+        onConfirm={alertState.onConfirm}
+      />
     </DashboardLayout>
   )
 }

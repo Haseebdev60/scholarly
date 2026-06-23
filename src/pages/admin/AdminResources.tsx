@@ -224,7 +224,9 @@ const AdminResources = () => {
                                                     try {
                                                         await adminApi.setHeroResource(video._id);
                                                         loadData();
-                                                    } catch (e: any) { alert(e.message) }
+                                                    } catch (e: any) {
+                                                        setAlertState({ open: true, title: 'Error', message: e.message || 'Failed to set hero video', type: 'error' });
+                                                    }
                                                 }} title="Set as Home Video">
                                                     <StarIcon className="h-5 w-5" />
                                                 </Button>

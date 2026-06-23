@@ -5,6 +5,7 @@ import Button from '../../components/Button'
 import Card from '../../components/Card'
 import Modal from '../../components/Modal'
 import FormField from '../../components/FormField'
+import AlertDialog, { type AlertDialogProps } from '../../components/AlertDialog'
 
 type ClassItem = {
     _id: string
@@ -28,6 +29,9 @@ const TeacherClasses = () => {
     const [activeModal, setActiveModal] = useState<'create' | 'edit' | null>(null)
     const [editingClassId, setEditingClassId] = useState<string | null>(null)
     const [classForm, setClassForm] = useState({ title: '', subjectId: '', scheduledDate: '', duration: 60, classType: 'live' as 'live' | 'recorded', meetingLink: '' })
+    const [alertState, setAlertState] = useState<Omit<AlertDialogProps, 'onClose' | 'onConfirm'> & { open: boolean }>({
+        open: false, title: '', message: '', type: 'info'
+    })
 
     useEffect(() => {
         loadData()
@@ -58,8 +62,19 @@ const TeacherClasses = () => {
             setActiveModal(null)
             setClassForm({ title: '', subjectId: '', scheduledDate: '', duration: 60, classType: 'live', meetingLink: '' })
             loadData()
-        } catch (err) {
-            alert('Failed to create class')
+            setAlertState({
+                open: true,
+                title: 'Success',
+                message: 'Class created successfully!',
+                type: 'success'
+            })
+        } catch (err: any) {
+            setAlertState({
+                open: true,
+                title: 'Error',
+                message: err.message || 'Failed to create class',
+                type: 'error'
+            })
         }
     }
 
@@ -76,8 +91,19 @@ const TeacherClasses = () => {
             setActiveModal(null)
             setEditingClassId(null)
             loadData()
-        } catch (err) {
-            alert('Failed to update class')
+            setAlertState({
+                open: true,
+                title: 'Success',
+                message: 'Class updated successfully!',
+                type: 'success'
+            })
+        } catch (err: any) {
+            setAlertState({
+                open: true,
+                title: 'Error',
+                message: err.message || 'Failed to update class',
+                type: 'error'
+            })
         }
     }
 
@@ -191,6 +217,14 @@ const TeacherClasses = () => {
                     <Button type="submit" className="w-full">Update Session</Button>
                 </form>
             </Modal>
+
+            <AlertDialog
+                open={alertState.open}
+                onClose={() => setAlertState(prev => ({ ...prev, open: false }))}
+                title={alertState.title}
+                message={alertState.message}
+                type={alertState.type}
+            />
         </div>
     )
 }

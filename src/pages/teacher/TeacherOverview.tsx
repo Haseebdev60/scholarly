@@ -6,6 +6,7 @@ import { GlassCard } from '../../components/GlassCard'
 import Modal from '../../components/Modal'
 import FormField from '../../components/FormField'
 import Badge from '../../components/Badge'
+import AlertDialog, { type AlertDialogProps } from '../../components/AlertDialog'
 import {
     BookOpenIcon,
     DocumentArrowUpIcon,
@@ -49,6 +50,9 @@ const TeacherOverview = () => {
     const [classForm, setClassForm] = useState({ title: '', subjectId: '', scheduledDate: '', duration: 60, classType: 'live' as 'live' | 'recorded', meetingLink: '' })
     const [uploadDoc, setUploadDoc] = useState({ title: '', subjectId: '', file: null as File | null, isPremium: false })
     const [uploadVideo, setUploadVideo] = useState({ title: '', subjectId: '', type: 'file' as 'file' | 'link', file: null as File | null, url: '', isPremium: false })
+    const [alertState, setAlertState] = useState<Omit<AlertDialogProps, 'onClose' | 'onConfirm'> & { open: boolean }>({
+        open: false, title: '', message: '', type: 'info'
+    })
 
     useEffect(() => {
         loadData()
@@ -80,8 +84,19 @@ const TeacherOverview = () => {
             setActiveModal(null)
             setClassForm({ title: '', subjectId: '', scheduledDate: '', duration: 60, classType: 'live', meetingLink: '' })
             loadData()
-        } catch (err) {
-            alert('Failed to create class')
+            setAlertState({
+                open: true,
+                title: 'Success',
+                message: 'Class scheduled successfully!',
+                type: 'success'
+            })
+        } catch (err: any) {
+            setAlertState({
+                open: true,
+                title: 'Error',
+                message: err.message || 'Failed to create class',
+                type: 'error'
+            })
         }
     }
 
@@ -112,12 +127,22 @@ const TeacherOverview = () => {
                 format: uploadDoc.file.name.split('.').pop()?.toUpperCase(),
                 isPremium: uploadDoc.isPremium
             })
-            alert('Document uploaded successfully!')
             setActiveModal(null)
             setUploadDoc({ title: '', subjectId: '', file: null, isPremium: false })
             loadData()
+            setAlertState({
+                open: true,
+                title: 'Success',
+                message: 'Document uploaded successfully!',
+                type: 'success'
+            })
         } catch (err: any) {
-            alert(`Failed to upload document: ${err.message || err}`)
+            setAlertState({
+                open: true,
+                title: 'Error',
+                message: `Failed to upload document: ${err.message || err}`,
+                type: 'error'
+            })
         }
     }
 
@@ -181,13 +206,23 @@ const TeacherOverview = () => {
                 isPremium: uploadVideo.isPremium,
                 thumbnail: thumb
             })
-            alert('Video resource added successfully!')
             setActiveModal(null)
             setUploadVideo({ title: '', subjectId: '', type: 'file', file: null, url: '', isPremium: false })
             loadData()
+            setAlertState({
+                open: true,
+                title: 'Success',
+                message: 'Video resource added successfully!',
+                type: 'success'
+            })
         } catch (err: any) {
             console.error(err)
-            alert(`Failed to upload video: ${err.message || err}`)
+            setAlertState({
+                open: true,
+                title: 'Error',
+                message: `Failed to upload video: ${err.message || err}`,
+                type: 'error'
+            })
         }
     }
 
@@ -196,8 +231,19 @@ const TeacherOverview = () => {
         try {
             await teacherApi.deleteResource(id)
             loadData()
-        } catch (err) {
-            alert('Failed to delete resource')
+            setAlertState({
+                open: true,
+                title: 'Deleted',
+                message: 'Resource deleted successfully.',
+                type: 'success'
+            })
+        } catch (err: any) {
+            setAlertState({
+                open: true,
+                title: 'Error',
+                message: err.message || 'Failed to delete resource',
+                type: 'error'
+            })
         }
     }
 
@@ -213,6 +259,13 @@ const TeacherOverview = () => {
 
     return (
         <div className="space-y-8">
+            <AlertDialog
+                open={alertState.open}
+                onClose={() => setAlertState(prev => ({ ...prev, open: false }))}
+                title={alertState.title}
+                message={alertState.message}
+                type={alertState.type}
+            />
             {/* Quick Actions */}
             <div className="flex gap-4 pb-6 border-b border-slate-200/50 dark:border-white/5">
                 <Button className="bg-gradient-to-r from-brand-600 to-electric-blue border-none shadow-glow font-bold h-12 px-6 rounded-xl text-white" onClick={() => setActiveModal('upload-select')}>

@@ -4,11 +4,15 @@ import { teacherApi } from '../../lib/api'
 import Button from '../../components/Button'
 import Card from '../../components/Card'
 import { TrashIcon } from '@heroicons/react/24/outline'
+import AlertDialog, { type AlertDialogProps } from '../../components/AlertDialog'
 
 const TeacherAvailability = () => {
     const [availability, setAvailability] = useState<{ day: string, slots: { startTime: string, duration: number }[] }[]>([])
     const [hourlyRate, setHourlyRate] = useState(2000)
     const [isLoading, setIsLoading] = useState(true)
+    const [alertState, setAlertState] = useState<Omit<AlertDialogProps, 'onClose' | 'onConfirm'> & { open: boolean }>({
+        open: false, title: '', message: '', type: 'info'
+    })
 
     useEffect(() => {
         loadData()
@@ -37,9 +41,19 @@ const TeacherAvailability = () => {
         try {
             await teacherApi.updateAvailability(availability)
             await teacherApi.updateSettings({ hourlyRate })
-            alert('Availability updated')
-        } catch (e) {
-            alert('Failed to update availability')
+            setAlertState({
+                open: true,
+                title: 'Success',
+                message: 'Availability updated successfully!',
+                type: 'success'
+            })
+        } catch (e: any) {
+            setAlertState({
+                open: true,
+                title: 'Error',
+                message: e.message || 'Failed to update availability',
+                type: 'error'
+            })
         }
     }
 
@@ -113,6 +127,14 @@ const TeacherAvailability = () => {
                     <p className="mt-2 text-xs text-slate-500">Set your hourly rate for 1-on-1 tutoring sessions.</p>
                 </div>
             </Card>
+
+            <AlertDialog
+                open={alertState.open}
+                onClose={() => setAlertState(prev => ({ ...prev, open: false }))}
+                title={alertState.title}
+                message={alertState.message}
+                type={alertState.type}
+            />
         </div>
     )
 }

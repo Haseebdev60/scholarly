@@ -160,6 +160,11 @@ export const teacherApi = {
             body: JSON.stringify(data),
         });
     },
+    deleteClass: async (classId) => {
+        return request(`/teacher/delete-class/${classId}`, {
+            method: 'DELETE',
+        });
+    },
     createResource: async (data) => {
         return request('/teacher/create-resource', {
             method: 'POST',

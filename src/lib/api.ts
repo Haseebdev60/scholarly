@@ -277,6 +277,12 @@ export const teacherApi = {
     })
   },
 
+  deleteClass: async (classId: string) => {
+    return request<{ success: boolean }>(`/teacher/delete-class/${classId}`, {
+      method: 'DELETE',
+    })
+  },
+
   createResource: async (data: {
     title: string;
     type: string;

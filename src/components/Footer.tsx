@@ -23,7 +23,7 @@ export const Footer = () => (
       <div className="grid gap-16 md:grid-cols-2 lg:grid-cols-12 mb-16">
         
         {/* Brand Section */}
-        <div className="lg:col-span-4 space-y-8">
+        <div className="lg:col-span-6 space-y-8">
           <Link to="/" className="flex items-center gap-3 group w-fit">
             <img src="/favicon.png" alt="Scholarly Logo" className="h-12 w-12 rounded-2xl shadow-glow group-hover:shadow-glow-hover group-hover:scale-105 transition-all duration-300 object-cover" />
             <span className="text-3xl font-black font-display text-white tracking-tight group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-brand-400 group-hover:to-electric-blue transition-all duration-300">Scholarly</span>
@@ -46,7 +46,7 @@ export const Footer = () => (
         </div>
 
         {/* Links Sections */}
-        <div className="lg:col-span-3 grid grid-cols-2 gap-8">
+        <div className="lg:col-span-6 grid grid-cols-2 gap-8">
           <div>
             <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-6">Platform</h3>
             <ul className="space-y-4">
@@ -72,22 +72,6 @@ export const Footer = () => (
               ))}
             </ul>
           </div>
-        </div>
-
-        {/* Newsletter Section */}
-        <div className="lg:col-span-5 bg-white/5 rounded-[2rem] p-8 border border-white/10 backdrop-blur-sm">
-          <h3 className="text-xl font-bold text-white mb-2">Subscribe to our newsletter</h3>
-          <p className="text-slate-400 mb-6 text-sm">Get the latest updates, articles, and resources sent to your inbox weekly.</p>
-          <form className="flex gap-2" onSubmit={(e) => e.preventDefault()}>
-            <input 
-              type="email" 
-              placeholder="Enter your email" 
-              className="flex-1 bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all"
-            />
-            <Button type="submit" className="bg-brand-600 hover:bg-brand-500 text-white rounded-xl px-6 border-none shadow-glow">
-              <ArrowRightIcon className="w-5 h-5" />
-            </Button>
-          </form>
         </div>
       </div>
 

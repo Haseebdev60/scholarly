@@ -71,6 +71,16 @@ router.put('/update-class/:classId', requireApprovedTeacher, async (req, res) =>
     const updated = await ClassModel.findByIdAndUpdate(classId, updates, { new: true });
     res.json(updated);
 });
+// DELETE /api/teacher/delete-class/:classId
+router.delete('/delete-class/:classId', requireApprovedTeacher, async (req, res) => {
+    const { classId } = req.params;
+    // ensure teacher owns this class
+    const existing = await ClassModel.findOne({ _id: classId, teacherId: req.user.id });
+    if (!existing)
+        return res.status(404).json({ error: 'Class not found or unauthorized' });
+    await ClassModel.findByIdAndDelete(classId);
+    res.json({ success: true });
+});
 // POST /api/teacher/create-resource
 router.post('/create-resource', requireApprovedTeacher, async (req, res) => {
     console.log('Create Resource Payload:', JSON.stringify(req.body, (k, v) => k === 'fileData' ? '...base64...' : v));

@@ -29,7 +29,13 @@ const TeacherClasses = () => {
     const [activeModal, setActiveModal] = useState<'create' | 'edit' | null>(null)
     const [editingClassId, setEditingClassId] = useState<string | null>(null)
     const [classForm, setClassForm] = useState({ title: '', subjectId: '', scheduledDate: '', duration: 60, classType: 'live' as 'live' | 'recorded', meetingLink: '' })
-    const [alertState, setAlertState] = useState<Omit<AlertDialogProps, 'onClose' | 'onConfirm'> & { open: boolean }>({
+    const [alertState, setAlertState] = useState<{
+        open: boolean
+        title: string
+        message: string
+        type: 'success' | 'error' | 'info' | 'confirm'
+        onConfirm?: () => void
+    }>({
         open: false, title: '', message: '', type: 'info'
     })
 
@@ -124,6 +130,36 @@ const TeacherClasses = () => {
         setActiveModal('edit')
     }
 
+    const handleDeleteClass = async (classId: string) => {
+        try {
+            await teacherApi.deleteClass(classId)
+            loadData()
+            setAlertState({
+                open: true,
+                title: 'Success',
+                message: 'Class deleted successfully!',
+                type: 'success'
+            })
+        } catch (err: any) {
+            setAlertState({
+                open: true,
+                title: 'Error',
+                message: err.message || 'Failed to delete class',
+                type: 'error'
+            })
+        }
+    }
+
+    const confirmDeleteClass = (classId: string) => {
+        setAlertState({
+            open: true,
+            title: 'Delete Class',
+            message: 'Are you sure you want to delete this session? This action cannot be undone.',
+            type: 'confirm',
+            onConfirm: () => handleDeleteClass(classId)
+        })
+    }
+
     if (loading) return <div>Loading...</div>
 
     return (
@@ -163,6 +199,7 @@ const TeacherClasses = () => {
                                 </div>
                                 <div className="pt-4 border-t border-slate-100 flex gap-2">
                                     <Button variant="outline" size="sm" className="flex-1" onClick={() => openEditClass(cls)}>Edit</Button>
+                                    <Button variant="danger" size="sm" className="flex-1" onClick={() => confirmDeleteClass(cls._id)}>Delete</Button>
                                     {cls.meetingLink && <Button variant="secondary" size="sm" className="flex-1" onClick={() => window.open(cls.meetingLink, '_blank')}>Join</Button>}
                                 </div>
                             </div>
@@ -224,6 +261,7 @@ const TeacherClasses = () => {
                 title={alertState.title}
                 message={alertState.message}
                 type={alertState.type}
+                onConfirm={alertState.onConfirm}
             />
         </div>
     )

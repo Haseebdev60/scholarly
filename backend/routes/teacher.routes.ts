@@ -127,6 +127,14 @@ router.put('/update-class/:id', async (req: AuthedRequest, res) => {
     res.json(updated)
 })
 
+// DELETE class
+router.delete('/delete-class/:id', async (req: AuthedRequest, res) => {
+    const existing = await Class.findOne({ _id: req.params.id, teacherId: req.user!.id })
+    if (!existing) return res.status(404).json({ error: 'Class not found or unauthorized' })
+    await Class.findByIdAndDelete(req.params.id)
+    res.json({ success: true })
+})
+
 // DELETE resource
 router.delete('/resource/:id', async (req: AuthedRequest, res) => {
     await Resource.findOneAndDelete({ _id: req.params.id, teacherId: req.user!.id })

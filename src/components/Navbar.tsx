@@ -15,7 +15,6 @@ const navItems = [
   { to: '/about', label: 'About' },
   { to: '/courses', label: 'Courses' },
   { to: '/teachers', label: 'Teachers' },
-  { to: '/downloads', label: 'App & Downloads' },
 ]
 
 const Navbar = ({ onLogin, onSignup }: NavbarProps) => {
